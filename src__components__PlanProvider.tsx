@@ -1,11 +1,12 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { findRecipe, sampleDays } from "@/lib/sample-data";
+import { findRecipe } from "@/lib/sample-data";
+import { baselinePlan } from "@/lib/plan-data";
 import { checkDay, repeatConflict } from "@/lib/rules";
 import type { PlannedDay, Recipe, Slot } from "@/lib/types";
 
-const KEY = "family-table-plan-v1";
+const KEY = "family-table-plan-v2";
 const SLOTS: Slot[] = ["breakfast", "morning_tea", "lunch", "afternoon_tea", "dinner"];
 
 export type SwapResult = { ok: true } | { ok: false; message: string };
@@ -30,9 +31,9 @@ function toSaved(days: PlannedDay[]): Saved {
   return out;
 }
 
-/** Rebuild days from saved recipe IDs. Anything unknown falls back to the original sample. */
+/** Rebuild days from saved recipe IDs. Anything unknown falls back to the original plan. */
 function fromSaved(saved: Saved): PlannedDay[] {
-  return sampleDays.map((day) => {
+  return baselinePlan.map((day) => {
     const s = saved[day.date];
     if (!s) return day;
     const slots = { ...day.slots };
@@ -49,14 +50,14 @@ function fromSaved(saved: Saved): PlannedDay[] {
 }
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
-  const [days, setDays] = useState<PlannedDay[]>(sampleDays);
+  const [days, setDays] = useState<PlannedDay[]>(baselinePlan);
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(KEY);
       if (raw) setDays(fromSaved(JSON.parse(raw) as Saved));
     } catch {
-      /* no saved plan, or storage not available: keep the sample plan */
+      /* no saved plan, or storage not available: keep the original plan */
     }
   }, []);
 
@@ -97,11 +98,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   );
 
   const reset = useCallback(() => {
-    setDays(sampleDays);
+    setDays(baselinePlan);
     try { window.localStorage.removeItem(KEY); } catch { /* ignore */ }
   }, []);
 
-  const changed = JSON.stringify(toSaved(days)) !== JSON.stringify(toSaved(sampleDays));
+  const changed = JSON.stringify(toSaved(days)) !== JSON.stringify(toSaved(baselinePlan));
 
   return <PlanContext.Provider value={{ days, swap, reset, changed }}>{children}</PlanContext.Provider>;
 }

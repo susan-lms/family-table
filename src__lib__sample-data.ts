@@ -1,5 +1,7 @@
 import type { Cuisine, DishClass, PlannedDay, Recipe } from "./types";
 import { batch1 } from "./recipes-batch1";
+import { batch2a } from "./recipes-batch2a";
+import { batch2b } from "./recipes-batch2b";
 
 /**
  * SAMPLE DATA ONLY. Written for this prototype, not yet taste-tested.
@@ -218,6 +220,8 @@ export const alternatives: Recipe[] = [
   base("R-ES-005", "Potato omelette wedges (less oil)", "Spanish", "breakfast_item", 15, 25, 3.5),
   base("R-CN-025", "Steamed vegetable buns", "Chinese", "breakfast_item", 30, 15, 3.5),
   ...batch1,
+  ...batch2a,
+  ...batch2b,
 ];
 
 /** Every dish the app knows about (the days above plus the swap choices), each once. */

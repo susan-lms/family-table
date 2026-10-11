@@ -3,33 +3,38 @@
 import { useState } from "react";
 import Link from "next/link";
 import { buildShoppingList, formatQty } from "@/lib/shopping";
-import { sampleDays } from "@/lib/sample-data";
+import { todaySG } from "@/lib/plan-data";
 import { usePlan } from "@/components/PlanProvider";
 
 export default function Shopping() {
   const { days: planDays } = usePlan();
-  const [selected, setSelected] = useState<string[]>(sampleDays.map((d) => d.date));
+  const todayIdx = Math.max(0, planDays.findIndex((d) => d.date === todaySG()));
+  const [count, setCount] = useState(3);
+  const [from, setFrom] = useState(todayIdx);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-  const days = planDays.filter((d) => selected.includes(d.date));
+  const days = planDays.slice(from, from + count);
   const { items, recipesWithoutDetails } = buildShoppingList(days);
   const categories = [...new Set(items.map((i) => i.category))];
-
-  const toggleDay = (date: string) =>
-    setSelected((s) => (s.includes(date) ? s.filter((x) => x !== date) : [...s, date]));
 
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold">Shopping list</h1>
-      <p className="text-lg">Quantities are for 8 people. Choose the days to shop for:</p>
-      <div className="flex flex-wrap gap-3">
-        {sampleDays.map((d) => (
-          <label key={d.date} className="flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-3 text-lg">
-            <input type="checkbox" className="h-6 w-6" checked={selected.includes(d.date)} onChange={() => toggleDay(d.date)} />
-            {d.date}
-          </label>
+      <p className="text-lg">Quantities are for 8 people. How many days do you want to shop for?</p>
+      <div className="flex flex-wrap gap-2">
+        {[1, 3, 7, 14].map((n) => (
+          <button key={n} onClick={() => setCount(n)} className={`rounded-full px-5 py-3 text-lg font-semibold ${count === n ? "bg-emerald-700 text-white" : "bg-stone-200"}`}>
+            {n === 1 ? "1 day" : `${n} days`}
+          </button>
         ))}
       </div>
+      {days.length > 0 && (
+        <div className="flex items-center justify-between gap-3">
+          <button className="rounded-xl bg-stone-200 px-4 py-3 text-lg font-semibold disabled:opacity-40" disabled={from === 0} onClick={() => setFrom(Math.max(0, from - count))}>← Earlier</button>
+          <p className="text-center text-lg font-semibold">{days[0].date} to {days[days.length - 1].date}</p>
+          <button className="rounded-xl bg-stone-200 px-4 py-3 text-lg font-semibold disabled:opacity-40" disabled={from + count >= planDays.length} onClick={() => setFrom(from + count)}>Later →</button>
+        </div>
+      )}
 
       {recipesWithoutDetails.length > 0 && (
         <p className="rounded-lg bg-amber-100 px-3 py-2 text-base text-amber-900">
@@ -37,7 +42,7 @@ export default function Shopping() {
         </p>
       )}
 
-      {items.length === 0 && <p className="text-lg text-stone-600">Nothing to buy yet. Pick a day above.</p>}
+      {items.length === 0 && <p className="text-lg text-stone-600">Nothing to buy for these days yet.</p>}
 
       {categories.map((c) => (
         <section key={c}>

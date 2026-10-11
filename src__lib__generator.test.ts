@@ -58,12 +58,15 @@ test("library check: need is 154 dishes in total for a 14-day no-repeat window",
   assert.equal(need, 154);
 });
 
-test("the real sample library is correctly reported as too small", () => {
+test("the real library now builds all 90 days with zero rule problems", () => {
   const short = libraryStatus(realLibrary).filter((x) => x.have < x.need);
-  assert.ok(short.length > 0);
+  assert.equal(short.length, 0);
   const r = generatePlan({ startDate: "2026-10-12", days: 90, library: realLibrary });
-  assert.ok(r.days.length < 90);
+  assert.equal(r.days.length, 90);
+  assert.equal(r.problems.length, 0);
   assert.deepEqual(validatePlan(r.days), []);
+  const seen = new Set(r.days.flatMap((d) => Object.values(d.slots).flat()).map((x) => x.cuisine));
+  assert.equal(seen.size, 10);
 });
 
 test("estimated gap: big test library is limited at 16 days, and the real library reports a smaller number", () => {
@@ -76,6 +79,16 @@ test("estimated gap: big test library is limited at 16 days, and the real librar
 test("new cuisines exist in the real library", () => {
   const cuisines = new Set(realLibrary.map((r) => r.cuisine));
   for (const c of ["Thai", "Indonesian", "Malaysian", "Indian"]) assert.ok(cuisines.has(c as Cuisine), c);
+});
+
+test("every recipe with steps has at least 3 ingredients, 3 steps and a note", () => {
+  const full = realLibrary.filter((r) => r.steps);
+  assert.ok(full.length >= 110);
+  for (const r of full) {
+    assert.ok(r.ingredients && r.ingredients.length >= 2, r.name + " ingredients");
+    assert.ok(r.steps && r.steps.length >= 3, r.name + " steps");
+    assert.ok(r.oil_salt_sugar_note, r.name + " note");
+  }
 });
 
 test("every batch-1 recipe has ingredients, steps, and units that the shopping list understands", () => {
