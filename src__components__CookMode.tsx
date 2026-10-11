@@ -24,6 +24,12 @@ export default function CookMode({ recipe }: { recipe: Recipe }) {
         </p>
       )}
 
+      {recipe.allergens && recipe.allergens.length > 0 && (
+        <p className="rounded-lg border-2 border-amber-300 bg-amber-50 px-4 py-3 text-lg font-medium text-amber-900">
+          Contains: {recipe.allergens.join(", ")}. Check ingredient labels if anyone has an allergy.
+        </p>
+      )}
+
       <section>
         <h2 className="text-xl font-semibold text-emerald-800">Ingredients</h2>
         <ul>

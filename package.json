@@ -6,7 +6,7 @@
     "dev": "node setup.mjs && next dev",
     "build": "node setup.mjs && next build",
     "start": "next start",
-    "test": "node setup.mjs && tsx src/lib/rules.test.ts && tsx src/lib/shopping.test.ts"
+    "test": "node setup.mjs && tsx src/lib/rules.test.ts && tsx src/lib/shopping.test.ts && tsx src/lib/generator.test.ts"
   },
   "dependencies": {
     "next": "^15.0.0",

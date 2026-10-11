@@ -1,4 +1,6 @@
-export type Cuisine = "Chinese" | "Western" | "Japanese" | "Korean" | "Fusion" | "Spanish";
+export type Cuisine =
+  | "Chinese" | "Western" | "Japanese" | "Korean" | "Fusion" | "Spanish"
+  | "Thai" | "Indonesian" | "Malaysian" | "Indian";
 
 export type DishClass =
   | "protein"
@@ -36,6 +38,7 @@ export interface Recipe {
   equipment?: string[];
   oil_salt_sugar_note?: string;
   food_safety?: string;
+  allergens?: string[]; // only what we know; empty/missing does not mean "allergen-free"
 }
 
 export interface PlannedDay {

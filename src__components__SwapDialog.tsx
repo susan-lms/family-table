@@ -5,7 +5,7 @@ import { library } from "@/lib/sample-data";
 import { repeatConflict } from "@/lib/rules";
 import type { Cuisine, PlannedDay, Recipe } from "@/lib/types";
 
-const CUISINES: Array<"All" | Cuisine> = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish"];
+const CUISINES: Array<"All" | Cuisine> = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian", "Indian"];
 
 interface Props {
   date: string;
