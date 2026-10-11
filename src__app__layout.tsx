@@ -5,8 +5,12 @@ import { PeopleProvider } from "@/components/PeopleProvider";
 import { PlanProvider } from "@/components/PlanProvider";
 import "./globals.css";
 
-export const metadata: Metadata = { title: "Family Table", description: "Family meal planner for 8" };
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const metadata: Metadata = {
+  title: "Family Table",
+  description: "Family meal planner for 8",
+  appleWebApp: { capable: true, title: "Family Table", statusBarStyle: "default" },
+};
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#047857" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
