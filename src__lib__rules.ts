@@ -8,24 +8,26 @@ const count = (items: Recipe[], cls: Recipe["dish_class"]) =>
 
 /**
  * Check one day against the meal rules.
- * Lunch (4 people): 1 protein + 1 vegetable.
+ * Lunch (4 people): 1 protein + 1 vegetable, OR 1 one-dish meal (porridge, noodles or sandwich).
  * Dinner (8 people): a soup every day, plus EITHER 2 protein + 2 vegetable dishes
- * OR 1 quick one-pot meal (rice with meat/fish and vegetables).
+ * OR 1 quick one-pot meal (rice with meat/fish and vegetables) OR 1 one-dish meal (noodles or sandwich).
  */
 export function checkDay(day: PlannedDay): Problem[] {
   const out: Problem[] = [];
   const add = (rule: string, message: string) => out.push({ date: day.date, rule, message });
 
   const l = day.slots.lunch ?? [];
-  if (l.length !== 2 || count(l, "protein") !== 1 || count(l, "vegetable") !== 1)
-    add("lunch", "Lunch needs exactly 1 protein dish and 1 vegetable dish.");
+  const lunchStandard = l.length === 2 && count(l, "protein") === 1 && count(l, "vegetable") === 1;
+  const lunchOneDish = l.length === 1 && count(l, "onedish") === 1;
+  if (!lunchStandard && !lunchOneDish)
+    add("lunch", "Lunch needs 1 protein dish + 1 vegetable dish, or 1 one-dish meal (porridge, noodles or sandwich).");
 
   const d = (day.slots.dinner ?? []).filter((r) => r.dish_class !== "staple");
   if (count(d, "soup") !== 1) add("dinner-soup", "Dinner needs a soup.");
   const standard = d.length === 5 && count(d, "protein") === 2 && count(d, "vegetable") === 2 && count(d, "soup") === 1;
-  const quick = d.length === 2 && count(d, "onepot") === 1 && count(d, "soup") === 1;
+  const quick = d.length === 2 && (count(d, "onepot") === 1 || count(d, "onedish") === 1) && count(d, "soup") === 1;
   if (!standard && !quick)
-    add("dinner", "Dinner needs a soup plus either 2 protein + 2 vegetable dishes, or 1 quick one-pot meal.");
+    add("dinner", "Dinner needs a soup plus either 2 protein + 2 vegetable dishes, 1 quick one-pot meal, or 1 one-dish meal (noodles or sandwich).");
 
   return out;
 }

@@ -17,12 +17,12 @@ t("every ingredient has a Chinese name", () => {
   for (const r of library) for (const g of r.ingredients ?? []) if (!ingredientZh(g.name)) missing.add(g.name);
   assert.deepEqual([...missing], []);
 });
-t("every lunch has a soft protein dish", () => {
-  const bad = baselinePlan.filter((d) => !d.slots.lunch.some((r) => r.dish_class === "protein" && isSoft(r)));
+t("every lunch has a soft main dish (protein dish, porridge or noodle soup)", () => {
+  const bad = baselinePlan.filter((d) => !d.slots.lunch.some((r) => (r.dish_class === "protein" || r.dish_class === "onedish") && isSoft(r)));
   assert.equal(bad.length, 0);
 });
 t("at least 95% of dinners have a soft main dish", () => {
-  const ok = baselinePlan.filter((d) => d.slots.dinner.some((r) => (r.dish_class === "protein" || r.dish_class === "onepot") && isSoft(r)));
+  const ok = baselinePlan.filter((d) => d.slots.dinner.some((r) => (r.dish_class === "protein" || r.dish_class === "onepot" || r.dish_class === "onedish") && isSoft(r)));
   assert.ok(ok.length / baselinePlan.length >= 0.95, `${ok.length}/${baselinePlan.length}`);
 });
 t("soups are soft; crispy fried dishes are not", () => {

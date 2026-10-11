@@ -20,7 +20,7 @@ const prettyDate = (iso: string) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-SG", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
 export default function DayCard({ date }: { date: string }) {
-  const { days, swap, changeDinnerMode, settings } = usePlan();
+  const { days, swap, changeDinnerMode, changeLunchMode, settings } = usePlan();
   const { people } = usePeople();
   const [target, setTarget] = useState<{ slot: Slot; index: number } | null>(null);
   const [message, setMessage] = useState("");
@@ -38,6 +38,8 @@ export default function DayCard({ date }: { date: string }) {
   const calciumDishes = [...day.slots.lunch, ...day.slots.dinner].filter(isCalciumRich).length;
   const warnings = avoidWarnings(day, people);
   const isQuick = day.slots.dinner.some((r) => r.dish_class === "onepot");
+  const isNoodleNight = day.slots.dinner.some((r) => r.dish_class === "onedish");
+  const isOneDishLunch = day.slots.lunch.some((r) => r.dish_class === "onedish");
   const meatFree = isMeatFreeDay(day.date, settings.meatFreeWeekdays);
   const current = target ? day.slots[target.slot][target.index] : null;
 
@@ -46,8 +48,11 @@ export default function DayCard({ date }: { date: string }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-2xl font-bold">
           {prettyDate(day.date)}
-          {day.slots.dinner.some((r) => r.dish_class === "onepot") && (
+          {isQuick && (
             <span className="ml-2 rounded-full bg-amber-100 px-3 py-1 align-middle text-base font-semibold text-amber-900">Quick night</span>
+          )}
+          {isNoodleNight && (
+            <span className="ml-2 rounded-full bg-indigo-100 px-3 py-1 align-middle text-base font-semibold text-indigo-900">Non-rice night</span>
           )}
         </h2>
         <p className="text-lg">Estimated cost: <strong>S${dayCost(day).toFixed(2)}</strong> <span className="text-stone-500">(estimate)</span></p>
@@ -92,11 +97,12 @@ export default function DayCard({ date }: { date: string }) {
                     {r.name}{r.name_zh ? <span className="ml-2 text-xl font-semibold text-stone-700">{r.name_zh}</span> : null}{" "}
                     <span className="text-sm text-stone-500">
                       · {r.cuisine}
-                      {r.dish_class === "protein" || r.dish_class === "onepot" ? ` · ${mainProtein(r)}` : ""}
+                      {r.dish_class === "protein" || r.dish_class === "onepot" || r.dish_class === "onedish" ? ` · ${mainProtein(r)}` : ""}
                       {` · ${r.prep_time_minutes + r.cook_time_minutes} min`}
                     </span>
                     {isSoft(r) && <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-sm font-semibold text-sky-900">Soft</span>}
                     {r.treat && <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-sm font-semibold text-orange-900">Treat</span>}
+                    {r.dish_class === "onedish" && <span className="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-sm font-semibold text-indigo-900">{r.meal === "porridge" ? "Porridge" : r.meal === "noodles" ? "Noodles" : "Sandwich"}</span>}
                     {r.dish_class === "onepot" && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-sm font-semibold text-emerald-900">One pot</span>}
                   </span>
                   <span className="no-print flex items-center gap-2">
@@ -125,19 +131,45 @@ export default function DayCard({ date }: { date: string }) {
         🍎 After dinner: <strong>{fruit.name} {fruit.zh}</strong> — about {fruit.qty} {fruit.unit === "piece" ? "pcs" : "g"} for 8 (about S${fruit.cost.toFixed(2)}, estimate, not counted above). Soft, low sugar. Cut small for the seniors.
       </p>
 
-      <div className="no-print mt-3 flex flex-wrap items-center gap-3">
+      <div className="no-print mt-3 flex flex-wrap items-center gap-2">
+        <span className="text-base font-semibold text-stone-700">Change the style:</span>
         <button
-          disabled={meatFree && !isQuick}
-          onClick={() => { const r = changeDinnerMode(day.date, isQuick ? "full" : "quick"); setMessage(r.ok ? "" : r.message); }}
-          className="rounded-lg border-2 border-emerald-700 px-4 py-2 text-base font-semibold text-emerald-800 disabled:opacity-40"
+          onClick={() => { const r = changeLunchMode(day.date, isOneDishLunch ? "standard" : "onedish"); setMessage(r.ok ? "" : r.message); }}
+          className="rounded-lg border-2 border-emerald-700 px-4 py-2 text-base font-semibold text-emerald-800"
         >
-          {isQuick ? "Make dinner a full meal (2 meat + 2 veg)" : "Make dinner a quick one-pot night"}
+          {isOneDishLunch ? "Lunch: rice + 2 dishes" : "Lunch: porridge / noodles / sandwich"}
         </button>
-        {message && !target && <span className="text-base font-medium text-red-700">{message}</span>}
+        {(isQuick || isNoodleNight) && (
+          <button
+            onClick={() => { const r = changeDinnerMode(day.date, "full"); setMessage(r.ok ? "" : r.message); }}
+            className="rounded-lg border-2 border-emerald-700 px-4 py-2 text-base font-semibold text-emerald-800"
+          >
+            Dinner: full (rice + 2 meat + 2 veg)
+          </button>
+        )}
+        {!isQuick && (
+          <button
+            disabled={meatFree}
+            onClick={() => { const r = changeDinnerMode(day.date, "quick"); setMessage(r.ok ? "" : r.message); }}
+            className="rounded-lg border-2 border-emerald-700 px-4 py-2 text-base font-semibold text-emerald-800 disabled:opacity-40"
+          >
+            Dinner: quick one-pot rice
+          </button>
+        )}
+        {!isNoodleNight && (
+          <button
+            onClick={() => { const r = changeDinnerMode(day.date, "noodle"); setMessage(r.ok ? "" : r.message); }}
+            className="rounded-lg border-2 border-emerald-700 px-4 py-2 text-base font-semibold text-emerald-800"
+          >
+            Dinner: noodles / sandwich
+          </button>
+        )}
+        {message && !target && <span className="w-full text-base font-medium text-red-700">{message}</span>}
       </div>
 
       {target && current && (
         <SwapDialog
+          slot={target.slot}
           date={date}
           allDays={days}
           current={current}

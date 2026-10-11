@@ -5,26 +5,30 @@ import { findRecipe, library } from "@/lib/sample-data";
 import { baselinePlan, PLAN_DAYS, PLAN_START } from "@/lib/plan-data";
 import { generatePlan } from "@/lib/generator";
 import { checkDay, repeatConflict } from "@/lib/rules";
-import { MEAT_FREE_WEEKDAYS, QUICK_WEEKDAYS } from "@/lib/servings";
-import { suggestDinner } from "@/lib/dinner-mode";
+import { LUNCH_ONEDISH_WEEKDAYS, MEAT_FREE_WEEKDAYS, NOODLE_DINNER_WEEKDAYS, QUICK_WEEKDAYS } from "@/lib/servings";
+import { suggestDinner, suggestLunch, type DinnerMode, type LunchMode } from "@/lib/dinner-mode";
 import type { PlannedDay, Recipe, Slot } from "@/lib/types";
 
-const KEY = "family-table-plan-v4";
+const KEY = "family-table-plan-v5";
 const SETTINGS_KEY = "family-table-settings-v1";
 const SLOTS: Slot[] = ["lunch", "dinner"];
 
 export type SwapResult = { ok: true } | { ok: false; message: string };
 
-export interface PlanSettings { quickWeekdays: number[]; meatFreeWeekdays: number[] }
-export const DEFAULT_SETTINGS: PlanSettings = { quickWeekdays: QUICK_WEEKDAYS, meatFreeWeekdays: MEAT_FREE_WEEKDAYS };
+export interface PlanSettings { quickWeekdays: number[]; meatFreeWeekdays: number[]; lunchOneDishWeekdays: number[]; noodleDinnerWeekdays: number[] }
+export const DEFAULT_SETTINGS: PlanSettings = {
+  quickWeekdays: QUICK_WEEKDAYS, meatFreeWeekdays: MEAT_FREE_WEEKDAYS, lunchOneDishWeekdays: LUNCH_ONEDISH_WEEKDAYS, noodleDinnerWeekdays: NOODLE_DINNER_WEEKDAYS,
+};
 
 interface PlanContextValue {
   days: PlannedDay[];
   swap: (date: string, slot: Slot, index: number, recipe: Recipe) => SwapResult;
   /** Replace a whole dinner (festival menu). Must follow every meal rule. */
   setDinner: (date: string, dishes: Recipe[]) => SwapResult;
-  /** Turn a dinner into a quick one-pot night, or back into a full dinner. */
-  changeDinnerMode: (date: string, mode: "quick" | "full") => SwapResult;
+  /** Turn a dinner into a quick one-pot night, a noodle/sandwich night, or a full dinner. */
+  changeDinnerMode: (date: string, mode: DinnerMode) => SwapResult;
+  /** Turn a lunch into a one-dish meal (porridge, noodles, sandwich) or back to 1 protein + 1 vegetable dish. */
+  changeLunchMode: (date: string, mode: LunchMode) => SwapResult;
   settings: PlanSettings;
   /** Change the weekly pattern and rebuild the whole plan (your dish changes are cleared). */
   applySettings: (s: PlanSettings) => SwapResult;
@@ -62,9 +66,11 @@ function fromSaved(saved: Saved, base: PlannedDay[]): PlannedDay[] {
 }
 
 const sameList = (a: number[], b: number[]) => [...a].sort().join() === [...b].sort().join();
-const isDefault = (s: PlanSettings) => sameList(s.quickWeekdays, DEFAULT_SETTINGS.quickWeekdays) && sameList(s.meatFreeWeekdays, DEFAULT_SETTINGS.meatFreeWeekdays);
+const isDefault = (s: PlanSettings) =>
+  sameList(s.quickWeekdays, DEFAULT_SETTINGS.quickWeekdays) && sameList(s.meatFreeWeekdays, DEFAULT_SETTINGS.meatFreeWeekdays) &&
+  sameList(s.lunchOneDishWeekdays, DEFAULT_SETTINGS.lunchOneDishWeekdays) && sameList(s.noodleDinnerWeekdays, DEFAULT_SETTINGS.noodleDinnerWeekdays);
 const buildBase = (s: PlanSettings): PlannedDay[] =>
-  isDefault(s) ? baselinePlan : generatePlan({ startDate: PLAN_START, days: PLAN_DAYS, library, quickWeekdays: s.quickWeekdays, meatFreeWeekdays: s.meatFreeWeekdays }).days;
+  isDefault(s) ? baselinePlan : generatePlan({ startDate: PLAN_START, days: PLAN_DAYS, library, quickWeekdays: s.quickWeekdays, meatFreeWeekdays: s.meatFreeWeekdays, lunchOneDishWeekdays: s.lunchOneDishWeekdays, noodleDinnerWeekdays: s.noodleDinnerWeekdays }).days;
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<PlanSettings>(DEFAULT_SETTINGS);
@@ -76,8 +82,15 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       let s = DEFAULT_SETTINGS;
       const rawS = window.localStorage.getItem(SETTINGS_KEY);
       if (rawS) {
-        const p = JSON.parse(rawS) as PlanSettings;
-        if (Array.isArray(p.quickWeekdays) && Array.isArray(p.meatFreeWeekdays)) s = p;
+        const p = JSON.parse(rawS) as Partial<PlanSettings>;
+        if (Array.isArray(p.quickWeekdays) && Array.isArray(p.meatFreeWeekdays)) {
+          s = {
+            quickWeekdays: p.quickWeekdays,
+            meatFreeWeekdays: p.meatFreeWeekdays,
+            lunchOneDishWeekdays: Array.isArray(p.lunchOneDishWeekdays) ? p.lunchOneDishWeekdays : LUNCH_ONEDISH_WEEKDAYS,
+            noodleDinnerWeekdays: Array.isArray(p.noodleDinnerWeekdays) ? p.noodleDinnerWeekdays : NOODLE_DINNER_WEEKDAYS,
+          };
+        }
       }
       const b = buildBase(s);
       setSettings(s);
@@ -143,10 +156,20 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   );
 
   const changeDinnerMode = useCallback(
-    (date: string, mode: "quick" | "full"): SwapResult => {
+    (date: string, mode: DinnerMode): SwapResult => {
       const choice = suggestDinner(days, date, mode, library, settings.meatFreeWeekdays);
       if (!choice.ok) return choice;
       const next = days.map((d) => (d.date === date ? { ...d, slots: { ...d.slots, dinner: choice.dishes } } : d));
+      return commit(next, date);
+    },
+    [days, settings.meatFreeWeekdays], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  const changeLunchMode = useCallback(
+    (date: string, mode: LunchMode): SwapResult => {
+      const choice = suggestLunch(days, date, mode, library, settings.meatFreeWeekdays);
+      if (!choice.ok) return choice;
+      const next = days.map((d) => (d.date === date ? { ...d, slots: { ...d.slots, lunch: choice.dishes } } : d));
       return commit(next, date);
     },
     [days, settings.meatFreeWeekdays], // eslint-disable-line react-hooks/exhaustive-deps
@@ -172,7 +195,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const changed = JSON.stringify(toSaved(days)) !== JSON.stringify(toSaved(base));
 
-  return <PlanContext.Provider value={{ days, swap, setDinner, changeDinnerMode, settings, applySettings, reset, changed }}>{children}</PlanContext.Provider>;
+  return <PlanContext.Provider value={{ days, swap, setDinner, changeDinnerMode, changeLunchMode, settings, applySettings, reset, changed }}>{children}</PlanContext.Provider>;
 }
 
 export function usePlan(): PlanContextValue {

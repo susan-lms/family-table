@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { generatePlan, libraryStatus, addDays, estimatedGapDays } from "./generator";
 import { validatePlan, checkTreats, repeatConflict, checkDay } from "./rules";
-import { isQuickNight } from "./servings";
+import { isQuickNight, weekdayOf } from "./servings";
 import { mainProtein } from "./protein";
 import { library as realLibrary } from "./sample-data";
 import type { Cuisine, DishClass, Recipe } from "./types";
@@ -10,13 +10,14 @@ const CUISINES: Cuisine[] = ["Chinese", "Western", "Japanese", "Korean", "Fusion
 
 /** Test-only library with plenty of dishes, to prove the engine can fill 90 days. */
 function bigLibrary(): Recipe[] {
-  const counts: Array<[DishClass, number]> = [["protein", 48], ["vegetable", 48], ["soup", 18], ["onepot", 12]];
+  const counts: Array<[DishClass, number]> = [["protein", 48], ["vegetable", 48], ["soup", 18], ["onepot", 12], ["onedish", 24]];
   const out: Recipe[] = [];
   for (const [cls, n] of counts) {
     for (let i = 0; i < n; i++) {
       out.push({
         recipe_id: `T-${cls}-${i}`, name: `Test ${cls} ${i}`, cuisine: CUISINES[i % 6], dish_class: cls,
         servings_default: 8, prep_time_minutes: 10, cook_time_minutes: 10, estimated_cost_sgd: 3, is_sample: true,
+        ...(cls === "onedish" ? { meal: (["porridge", "noodles", "sandwich"] as const)[i % 3] } : {}),
       });
     }
   }
@@ -33,11 +34,11 @@ test("90 days are built from a big enough library with zero rule problems", () =
   assert.deepEqual(validatePlan(r.days), []);
 });
 
-test("every dinner has a soup, and lunch has exactly one protein and one vegetable", () => {
+test("every dinner has a soup, and lunch is 1 protein + 1 vegetable, or 1 one-dish meal on Tue/Thu/Sat", () => {
   const r = generatePlan({ startDate: "2026-10-12", days: 90, library: bigLibrary() });
   for (const d of r.days) {
     assert.equal(d.slots.dinner.filter((x) => x.dish_class === "soup").length, 1, d.date);
-    assert.equal(d.slots.lunch.length, 2);
+    assert.equal(d.slots.lunch.length, [2, 4, 6].includes(weekdayOf(d.date)) ? 1 : 2, d.date);
     assert.deepEqual(checkDay(d), []);
   }
 });
@@ -46,8 +47,10 @@ test("quick one-pot dinners fall on Mon, Wed and Fri; other nights are standard"
   const r = generatePlan({ startDate: "2026-10-12", days: 28, library: bigLibrary() });
   for (const d of r.days) {
     const hasOnePot = d.slots.dinner.some((x) => x.dish_class === "onepot");
+    const noodleNight = d.slots.dinner.some((x) => x.dish_class === "onedish");
     assert.equal(hasOnePot, isQuickNight(d.date), d.date);
-    assert.equal(d.slots.dinner.length, hasOnePot ? 2 : 5, d.date);
+    assert.equal(noodleNight, weekdayOf(d.date) === 0, d.date);
+    assert.equal(d.slots.dinner.length, hasOnePot || noodleNight ? 2 : 5, d.date);
   }
   assert.equal(isQuickNight("2026-10-12"), true); // Monday
   assert.equal(isQuickNight("2026-10-13"), false); // Tuesday
@@ -67,9 +70,9 @@ test("a too-small library stops early and explains why, instead of breaking a ru
   assert.deepEqual(validatePlan(r.days), []);
 });
 
-test("library check: 14 days need 30 protein, 30 vegetable, 14 soup and 6 one-pot dishes", () => {
+test("library check: 14 days need 30 protein, 30 vegetable, 14 soup, 6 one-pot and 8 one-dish meals", () => {
   const need = Object.fromEntries(libraryStatus(bigLibrary()).map((s) => [s.dishClass, s.need]));
-  assert.deepEqual(need, { protein: 30, vegetable: 30, soup: 14, onepot: 6 });
+  assert.deepEqual(need, { protein: 30, vegetable: 30, soup: 14, onepot: 6, onedish: 8 });
 });
 
 test("the real library builds all 90 days with zero rule problems and all 9 cuisines (Indian is switched off)", () => {
@@ -88,7 +91,7 @@ test("real plan serves chicken, pork, beef, fish and seafood regularly (at least
   const r = generatePlan({ startDate: "2026-10-12", days: 90, library: realLibrary });
   const count: Record<string, number> = {};
   for (const d of r.days) for (const x of [...d.slots.lunch, ...d.slots.dinner]) {
-    if (x.dish_class === "protein" || x.dish_class === "onepot") count[mainProtein(x)] = (count[mainProtein(x)] ?? 0) + 1;
+    if (x.dish_class === "protein" || x.dish_class === "onepot" || x.dish_class === "onedish") count[mainProtein(x)] = (count[mainProtein(x)] ?? 0) + 1;
   }
   for (const t of ["chicken", "pork", "beef", "fish", "seafood"]) assert.ok((count[t] ?? 0) >= 15, `${t}: ${count[t]}`);
 });
@@ -165,6 +168,21 @@ test("the library has plenty of stir-fry and low-oil fried dishes", () => {
 test("addDays handles month ends", () => {
   assert.equal(addDays("2026-10-31", 1), "2026-11-01");
   assert.equal(addDays("2026-12-31", 1), "2027-01-01");
+});
+
+test("one-dish meals: lunches Tue/Thu/Sat (mostly porridge), noodle or sandwich dinners on Sunday, never porridge at dinner", () => {
+  const r = generatePlan({ startDate: "2026-10-12", days: 90, library: realLibrary });
+  const lunchOne = r.days.filter((d) => d.slots.lunch.some((x) => x.dish_class === "onedish"));
+  assert.equal(lunchOne.length, r.days.filter((d) => [2, 4, 6].includes(weekdayOf(d.date))).length);
+  const porridge = lunchOne.filter((d) => d.slots.lunch[0].meal === "porridge").length;
+  assert.ok(porridge >= 15, `porridge lunches: ${porridge}`);
+  assert.ok(lunchOne.some((d) => d.slots.lunch[0].meal === "noodles") && lunchOne.some((d) => d.slots.lunch[0].meal === "sandwich"));
+  for (const d of r.days.filter((x) => weekdayOf(x.date) === 0)) {
+    const main = d.slots.dinner.find((x) => x.dish_class === "onedish");
+    assert.ok(main && main.meal !== "porridge", d.date);
+  }
+  const kinds = new Set(lunchOne.map((d) => mainProtein(d.slots.lunch[0])));
+  for (const k of ["chicken", "pork", "fish"]) assert.ok(kinds.has(k as never), [...kinds].join());
 });
 
 console.log(`\n${passed} tests passed`);

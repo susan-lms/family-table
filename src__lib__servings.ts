@@ -15,3 +15,9 @@ export const isQuickNight = (isoDate: string, quickWeekdays: number[] = QUICK_WE
 export const MEAT_FREE_WEEKDAYS = [4];
 export const isMeatFreeDay = (isoDate: string, days: number[] = MEAT_FREE_WEEKDAYS): boolean =>
   days.includes(new Date(isoDate + "T00:00:00Z").getUTCDay());
+
+/** Lunch is a one-dish meal (porridge, noodles or sandwich) on these weekdays. Default: Tue, Thu, Sat. */
+export const LUNCH_ONEDISH_WEEKDAYS = [2, 4, 6];
+/** Dinner is a non-rice night (noodles or sandwiches, plus soup) on these weekdays. Default: Sunday. */
+export const NOODLE_DINNER_WEEKDAYS = [0];
+export const weekdayOf = (isoDate: string): number => new Date(isoDate + "T00:00:00Z").getUTCDay();

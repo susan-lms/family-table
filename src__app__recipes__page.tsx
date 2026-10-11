@@ -8,7 +8,8 @@ import { isCalciumRich } from "@/lib/nutrition";
 import { isSoft } from "@/lib/softness";
 import { PROTEIN_TYPES, mainProtein } from "@/lib/protein";
 
-const TYPES = ["all", "onepot", "protein", "vegetable", "soup"] as const;
+const TYPES = ["all", "onedish", "onepot", "protein", "vegetable", "soup"] as const;
+const STYLES = ["All styles", "porridge", "noodles", "sandwich"] as const;
 const CUISINES = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian"];
 const GOAL_GAP_DAYS = 60;
 
@@ -18,6 +19,7 @@ export default function Recipes() {
   const [cuisine, setCuisine] = useState("All");
   const [meat, setMeat] = useState("All");
   const [softOnly, setSoftOnly] = useState(false);
+  const [style, setStyle] = useState<(typeof STYLES)[number]>("All styles");
 
   const status = libraryStatus(library);
   const totalHave = status.reduce((s, x) => s + x.have, 0);
@@ -34,6 +36,7 @@ export default function Recipes() {
       (cuisine === "All" || r.cuisine === cuisine) &&
       (meat === "All" || mainProtein(r) === meat) &&
       (!softOnly || isSoft(r)) &&
+      (style === "All styles" || r.meal === style) &&
       (r.name.toLowerCase().includes(q.trim().toLowerCase()) || (r.name_zh ?? "").includes(q.trim())),
   );
 
@@ -119,6 +122,17 @@ export default function Recipes() {
               className={`rounded-full px-4 py-2 text-base font-semibold ${meat === m ? "bg-emerald-700 text-white" : "bg-stone-200"}`}
             >
               {m === "All" ? "Any meat or fish" : m}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {STYLES.map((m) => (
+            <button
+              key={m}
+              onClick={() => setStyle(m)}
+              className={`rounded-full px-4 py-2 text-base font-semibold ${style === m ? "bg-indigo-700 text-white" : "bg-indigo-100 text-indigo-900"}`}
+            >
+              {m === "All styles" ? "All styles" : m === "porridge" ? "Porridge 粥" : m === "noodles" ? "Noodles 面/粉" : "Sandwich / wrap"}
             </button>
           ))}
         </div>

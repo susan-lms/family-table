@@ -10,6 +10,7 @@ import { mainProtein } from "@/lib/protein";
 const CUISINES: Array<"All" | Cuisine> = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian"];
 
 interface Props {
+  slot?: "lunch" | "dinner";
   date: string;
   allDays: PlannedDay[];
   current: Recipe;
@@ -18,11 +19,13 @@ interface Props {
   onClose: () => void;
 }
 
-export default function SwapDialog({ date, allDays, current, message, onPick, onClose }: Props) {
+export default function SwapDialog({ slot, date, allDays, current, message, onPick, onClose }: Props) {
   const [cuisine, setCuisine] = useState<"All" | Cuisine>("All");
 
   const options = library.filter(
-    (r) => r.dish_class === current.dish_class && r.recipe_id !== current.recipe_id && (cuisine === "All" || r.cuisine === cuisine),
+    (r) =>
+      r.dish_class === current.dish_class && r.recipe_id !== current.recipe_id && (cuisine === "All" || r.cuisine === cuisine) &&
+      !(slot === "dinner" && r.meal === "porridge"), // porridge is a lunch choice
   );
 
   return (
@@ -66,7 +69,7 @@ export default function SwapDialog({ date, allDays, current, message, onPick, on
                 >
                   <span className="block text-lg font-semibold">{r.name} {r.name_zh}{isSoft(r) ? " · Soft" : ""}{r.treat ? " · Treat" : ""}</span>
                   <span className="block text-base">
-                    {r.cuisine}{r.dish_class === "protein" || r.dish_class === "onepot" ? ` · ${mainProtein(r)}` : ""} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min · S${r.estimated_cost_sgd.toFixed(2)} for 8 (estimate)
+                    {r.cuisine}{r.dish_class === "protein" || r.dish_class === "onepot" || r.dish_class === "onedish" ? ` · ${mainProtein(r)}` : ""} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min · S${r.estimated_cost_sgd.toFixed(2)} for 8 (estimate)
                   </span>
                   {conflict ? (
                     <span className="block text-base font-medium text-red-700">Not available: {conflict}</span>

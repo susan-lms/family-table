@@ -52,7 +52,7 @@ export const PRICE_RULES: Rule[] = [
   { re: /fried shallots/i, tsp: 0.08 }, { re: /grated coconut/i, kg: 7 }, { re: /pandan juice/i, l: 3 },
   { re: /^water$|warm water|cold water/i, l: 0 },
   { re: /wrappers/i, each: 0.12 }, { re: /puff pastry|curry puff pastry/i, each: 0.25 },
-  { re: /noodles|vermicelli/i, kg: 4.5 }, { re: /lettuce/i, each: 1.5 }, { re: /snow peas/i, kg: 9 },
+  { re: /spaghetti/i, kg: 3.5 }, { re: /mee sua/i, kg: 6 }, { re: /udon|soba/i, kg: 5 }, { re: /noodles|vermicelli|bee hoon/i, kg: 4.5 }, { re: /lettuce/i, each: 1.5 }, { re: /snow peas/i, kg: 9 },
   { re: /chicken wings/i, kg: 7 }, { re: /asparagus/i, kg: 12 }, { re: /taro/i, kg: 4 }, { re: /peanuts/i, kg: 8 },
   { re: /salt$/i, tsp: 0.005 },
   { re: /pepper|paprika|cumin|turmeric|cinnamon|nutmeg|coriander|masala|curry|chilli powder|mustard|thyme|rosemary|oregano|basil|herbs|dill|star anise|peppercorn/i, tsp: 0.12, each: 0.1 },

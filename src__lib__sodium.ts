@@ -6,7 +6,7 @@ import type { Ingredient, PlannedDay, Recipe } from "./types";
  * light soy sauce 860 mg, kecap manis 227 mg per tablespoon). Salt: 1 teaspoon = about 5 g = 2,000 mg sodium
  * (Health Promotion Board: 5 g salt = 2,000 mg sodium).
  * ASSUMPTIONS (not verified): low-salt soy sauce about 40% less than regular (520 mg/tbsp); low-salt miso 400 mg/tbsp;
- * natural sodium of fresh food is a typical average; dried seaweed and canned foods are guesses.
+ * natural sodium of fresh food is a typical average; dried seaweed, canned foods, bread and wheat noodles (udon, egg noodles, mee sua, soba) are guesses.
  * Table salt or sauce added at the table is NOT counted.
  */
 interface Rule { re: RegExp; tbsp?: number; tsp?: number; per100?: number; each?: number }
@@ -30,6 +30,10 @@ const RULES: Rule[] = [
   { re: /wrappers/i, each: 60 },
   { re: /puff pastry/i, each: 150 },
   { re: /wholemeal bread/i, each: 150 },
+  { re: /udon/i, per100: 300 }, // assumption: fresh udon is salted
+  { re: /egg noodles/i, per100: 200 }, // assumption
+  { re: /mee sua/i, per100: 800 }, // assumption: dried wheat vermicelli is salted
+  { re: /soba/i, per100: 150 }, // assumption
   { re: /cheese/i, each: 250 },
   { re: /prawn|squid|clam|mussel|scallop/i, per100: 150 },
   { re: /^eggs?$|hard-boiled/i, each: 62 },

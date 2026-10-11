@@ -14,6 +14,9 @@ const HARD_VEG = /salad|air-fr|roast|fries|crispy|raw/i;
 
 export function isSoft(r: Recipe): boolean {
   if (r.dish_class === "soup") return true;
+  if (r.dish_class === "onedish" && r.meal === "porridge") return true;
+  // noodles are cooked until soft and cut short for the seniors, so they count as soft; sandwiches are judged by their filling below
+  if (r.dish_class === "onedish" && r.meal === "noodles") return true;
   if (r.dish_class === "vegetable" && TENDER_VEG.test(r.name) && !HARD_VEG.test(r.name)) return true;
   if (/minced|scramble/i.test(r.name) && !/crispy|fried|air-fr|nugget|wrap/i.test(r.name)) return true;
   const text = `${r.name} ${(r.equipment ?? []).join(" ")}`;

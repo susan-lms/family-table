@@ -10,7 +10,7 @@ const PER_100G: Array<[RegExp, number]> = [
   [/minced pork|lean pork|pork/i, 20], [/beef/i, 20], [/salmon/i, 20], [/cod|sea bass|white fish|mackerel/i, 19],
   [/canned tuna/i, 24], [/prawn/i, 18], [/squid/i, 16], [/clam/i, 10], [/scallop(?! or)/i, 17], [/mussel/i, 12],
   [/tempeh/i, 19], [/egg tofu/i, 5], [/silken/i, 5], [/soft tofu/i, 6], [/firm tofu|tofu/i, 8],
-  [/red lentils/i, 24], [/chickpeas|white beans/i, 7], [/edamame/i, 11], [/peanuts/i, 26], [/rolled oats/i, 13],
+  [/wholemeal bread/i, 0], [/red lentils/i, 24], [/chickpeas|white beans/i, 7], [/edamame/i, 11], [/peanuts/i, 26], [/rolled oats/i, 13],
   [/^rice$|jasmine|basmati/i, 7], [/cooked rice/i, 2.5], [/green peas/i, 5], [/mushroom/i, 3], [/miso/i, 12],
 ];
 const EGG_G = 6; // per egg

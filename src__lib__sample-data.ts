@@ -5,13 +5,14 @@ import { batch2b } from "./recipes-batch2b";
 import { onepot } from "./recipes-onepot";
 import { batch6Proteins, batch6Soups } from "./recipes-batch6";
 import { batch5 } from "./recipes-batch5";
+import { onedish } from "./recipes-onedish";
 import { batch7 } from "./recipes-batch7";
 import { festivalDishes } from "./recipes-festival";
 import { batch4 } from "./recipes-batch4";
 import { batch3all } from "./recipes-batch3";
 import { estimateRecipeCost } from "./prices";
 import { DISH_ZH } from "./zh-names";
-import { DISH_ZH_EXTRA } from "./zh-names-extra";
+import { DISH_ZH_EXTRA, DISH_ZH_ONEDISH } from "./zh-names-extra";
 
 /**
  * SAMPLE DATA ONLY. Written for this prototype, not yet taste-tested.
@@ -157,6 +158,7 @@ export const alternatives: Recipe[] = [
   ...batch6Proteins,
   ...batch6Soups,
   ...batch7,
+  ...onedish,
   ...festivalDishes,
 ];
 
@@ -192,13 +194,13 @@ export const allRecipes: Recipe[] = (() => {
     seen.add(r0.recipe_id);
     const r = portion(r0);
     const cost = estimateRecipeCost(r);
-    out.push({ ...(cost === undefined ? r : { ...r, estimated_cost_sgd: cost }), name_zh: DISH_ZH[r.recipe_id] ?? DISH_ZH_EXTRA[r.recipe_id] });
+    out.push({ ...(cost === undefined ? r : { ...r, estimated_cost_sgd: cost }), name_zh: DISH_ZH[r.recipe_id] ?? DISH_ZH_EXTRA[r.recipe_id] ?? DISH_ZH_ONEDISH[r.recipe_id] });
   }
   return out;
 })();
 
 /** Dish types served at lunch and dinner. Breakfast items and snacks are kept in the data but not planned (the household asked for lunch and dinner only). */
-const SERVED = new Set(["protein", "vegetable", "soup", "onepot"]);
+const SERVED = new Set(["protein", "vegetable", "soup", "onepot", "onedish"]);
 /** Cuisines the household does not want planned. The recipes stay in the data, so this can be switched back on. */
 export const EXCLUDED_CUISINES: Cuisine[] = ["Indian"];
 const servedAll = allRecipes.filter((r) => SERVED.has(r.dish_class) && !EXCLUDED_CUISINES.includes(r.cuisine));

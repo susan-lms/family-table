@@ -3,7 +3,7 @@ import Link from "next/link";
 const items = [
   { href: "/festivals", title: "Festival menus 节日菜单", text: "Dongzhi, Christmas, New Year's Eve and Chinese New Year dinners. Put one on its date with one tap." },
   { href: "/family", title: "Family notes 家人备注", text: "Write who avoids what (for example prawns or beef). The Today and Week pages will warn you." },
-  { href: "/settings", title: "Weekly pattern 每周安排", text: "Choose which nights are quick one-pot nights and which day is meat-free." },
+  { href: "/settings", title: "Weekly pattern 每周安排", text: "Choose quick one-pot nights, porridge/noodle lunches, noodle dinners and the meat-free day." },
 ];
 
 export default function More() {

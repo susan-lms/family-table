@@ -22,7 +22,7 @@ export default function Planner() {
     <div className="space-y-4">
       <h1 className="text-3xl font-bold">Weekly planner 每周菜单</h1>
       <PrintButton />
-      <p className="text-lg">90-day plan from {pretty(PLAN_START)}: lunch for 4, dinner for 8 with a soup every night. Quick one-pot dinners on Mon, Wed and Fri. Your changes are saved on this device only.</p>
+      <p className="text-lg">90-day plan from {pretty(PLAN_START)}: lunch for 4, dinner for 8 with a soup every night. Quick one-pot dinners, porridge, noodle and sandwich meals add variety (change the pattern under More → Weekly pattern). Your changes are saved on this device only.</p>
       <p className={`rounded-lg px-3 py-2 text-base font-medium ${repeats.length ? "bg-red-100 text-red-900" : "bg-emerald-100 text-emerald-900"}`}>
         {repeats.length ? repeats.map((p) => p.message).join(" ") : `✓ 14-day no-repeat rule passed for all ${days.length} days`}
       </p>

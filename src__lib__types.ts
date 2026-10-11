@@ -9,6 +9,7 @@ export type DishClass =
   | "snack"
   | "breakfast_item"
   | "onepot" // quick one-pot meal: rice + protein + vegetables in one pot
+  | "onedish" // complete one-dish meal that is not rice-with-dishes: porridge, noodles, sandwiches
   | "staple";
 
 export type Slot = "lunch" | "dinner";
@@ -35,6 +36,7 @@ export interface Recipe {
   cook_time_minutes: number;
   estimated_cost_sgd: number; // placeholder estimate, not a real price
   is_sample: boolean; // true until a person has checked it
+  meal?: "porridge" | "noodles" | "sandwich"; // style of a one-dish meal
   festival?: string; // festival-only dish (used by the festival menus, never by the normal plan)
   treat?: boolean; // deep-fried or rich dish: the planner allows at most 1 per 7 days
   ingredients?: Ingredient[]; // missing = "recipe details coming"

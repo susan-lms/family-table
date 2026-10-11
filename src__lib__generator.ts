@@ -1,6 +1,6 @@
 import type { DishClass, PlannedDay, Recipe } from "./types";
 import { dayCost } from "./rules";
-import { MEAT_FREE_WEEKDAYS, QUICK_WEEKDAYS, isMeatFreeDay, isQuickNight } from "./servings";
+import { LUNCH_ONEDISH_WEEKDAYS, MEAT_FREE_WEEKDAYS, NOODLE_DINNER_WEEKDAYS, QUICK_WEEKDAYS, isMeatFreeDay, isQuickNight, weekdayOf } from "./servings";
 import { mainProtein, type ProteinType } from "./protein";
 import { isSoft } from "./softness";
 import { recipeProtein } from "./nutrition";
@@ -12,26 +12,35 @@ export const CLASS_LABELS: Record<string, string> = {
   vegetable: "Vegetable dishes",
   soup: "Soups",
   onepot: "Quick one-pot meals",
+  onedish: "One-dish meals (porridge, noodles, sandwiches)",
   staple: "Staples",
 };
 
-const CLASSES: DishClass[] = ["protein", "vegetable", "soup", "onepot"];
+const CLASSES: DishClass[] = ["protein", "vegetable", "soup", "onepot", "onedish"];
 
 /** How many dishes of each type a normal day uses, counted over `windowDays` days (depends on how many quick nights fall in the window). */
-function needInWindow(windowDays: number, quickWeekdays: number[]): Record<DishClass, number> {
-  // Count quick nights in the worst window of consecutive days starting on each weekday.
-  let quick = 0;
-  for (let start = 0; start < 7; start++) {
-    let q = 0;
-    for (let k = 0; k < windowDays; k++) if (quickWeekdays.includes((start + k) % 7)) q++;
-    quick = Math.max(quick, q);
-  }
+function needInWindow(
+  windowDays: number, quickWeekdays: number[], lunchOneDish: number[] = LUNCH_ONEDISH_WEEKDAYS, noodleNights: number[] = NOODLE_DINNER_WEEKDAYS,
+): Record<DishClass, number> {
+  // Count special days in the worst window of consecutive days starting on each weekday.
+  const worst = (weekdays: number[]) => {
+    let w = 0;
+    for (let start = 0; start < 7; start++) {
+      let q = 0;
+      for (let k = 0; k < windowDays; k++) if (weekdays.includes((start + k) % 7)) q++;
+      w = Math.max(w, q);
+    }
+    return w;
+  };
+  const quick = worst(quickWeekdays);
   const standard = windowDays - quick;
+  // One-dish lunches and noodle dinners use fewer protein and vegetable dishes, but we keep the larger numbers to be safe.
   return {
     protein: windowDays /* lunch */ + 2 * standard,
     vegetable: windowDays + 2 * standard,
     soup: windowDays,
     onepot: quick,
+    onedish: worst(lunchOneDish) + worst(noodleNights),
     breakfast_item: 0,
     snack: 0,
     staple: 0,
@@ -97,6 +106,8 @@ export interface GenOptions {
   budget?: { min: number; max: number }; // default S$0-80 (only "over" is a warning)
   quickWeekdays?: number[]; // weekdays with a quick one-pot dinner (0 = Sunday). Default Mon, Wed, Fri.
   meatFreeWeekdays?: number[]; // weekdays with no meat, fish or seafood (eggs and tofu are fine). Default Thursday.
+  lunchOneDishWeekdays?: number[]; // weekdays when lunch is one dish: porridge, noodles or a sandwich. Default Tue, Thu, Sat.
+  noodleDinnerWeekdays?: number[]; // weekdays when dinner is a non-rice night (noodles or sandwich + soup). Default Sunday.
 }
 
 /** Dishes allowed on a meat-free day: no meat, fish or seafood in them. */
@@ -115,6 +126,9 @@ export interface GenResult {
 /** How strongly cheaper dishes are preferred. 0 = ignore cost. Never overrides the 14-day rule. */
 const COST_WEIGHT = 4;
 
+/** How strongly 'waited longest' is preferred over cost and cuisine balance (1 point per day waited, times this). */
+const GAP_WEIGHT = 3;
+
 /** Preference for soft, easy-to-chew dishes (two seniors aged 85+): every lunch and dinner should have at least one. */
 const SOFT_BONUS = 1500;
 
@@ -123,6 +137,12 @@ const PROTEIN_WEIGHT = 100;
 
 /** A treat (deep-fried) dish may appear at most once in any 7 days. */
 export const TREAT_GAP_DAYS = 7;
+
+/** Lunch one-dish days lean towards porridge (negative = preferred). */
+const PORRIDGE_BONUS = -60;
+
+/** On a noodle night the dinner already has a separate soup, so prefer noodle dishes that are not themselves soups. */
+const NOODLE_SOUP_PENALTY = 800;
 
 /**
  * Build a plan. Deterministic: same input, same plan.
@@ -134,6 +154,8 @@ export function generatePlan(opts: GenOptions): GenResult {
   const budget = opts.budget ?? { min: 0, max: 80 };
   const quickWeekdays = opts.quickWeekdays ?? QUICK_WEEKDAYS;
   const meatFreeWeekdays = opts.meatFreeWeekdays ?? MEAT_FREE_WEEKDAYS;
+  const lunchOneDishWeekdays = opts.lunchOneDishWeekdays ?? LUNCH_ONEDISH_WEEKDAYS;
+  const noodleDinnerWeekdays = opts.noodleDinnerWeekdays ?? NOODLE_DINNER_WEEKDAYS;
   const lastUsed = new Map<string, number>();
   const cuisineTotal = new Map<string, number>();
   const typeDays = new Map<ProteinType, number[]>(); // days on which each protein type was served
@@ -145,18 +167,21 @@ export function generatePlan(opts: GenOptions): GenResult {
   for (let i = 0; i < opts.days; i++) {
     const date = addDays(opts.startDate, i);
     const meatFreeDay = isMeatFreeDay(date, meatFreeWeekdays);
-    const quick = isQuickNight(date, quickWeekdays) && !meatFreeDay; // one-pot meals all have meat or fish, so a meat-free day gets a normal dinner
+    const lunchOne = lunchOneDishWeekdays.includes(weekdayOf(date));
+    const noodleNight = noodleDinnerWeekdays.includes(weekdayOf(date));
+    const quick = isQuickNight(date, quickWeekdays) && !meatFreeDay && !noodleNight; // one-pot meals all have meat or fish, so a meat-free day gets a normal dinner
     const pickedToday = new Set<string>();
     const typesToday: ProteinType[] = [];
     let treatToday = false;
     let missing: DishClass | null = null;
 
-    const pick = (cls: DishClass, count: number, wantSoftFirst = false): Recipe[] => {
+    const pick = (cls: DishClass, count: number, wantSoftFirst = false, meals?: Array<NonNullable<Recipe["meal"]>>): Recipe[] => {
       const chosen: Recipe[] = [];
       for (let k = 0; k < count; k++) {
         const eligible = opts.library.filter((r) => {
           if (r.dish_class !== cls || pickedToday.has(r.recipe_id)) return false;
           if (meatFreeDay && !isMeatFree(r)) return false;
+          if (meals && !(r.meal && meals.includes(r.meal))) return false;
           if (r.treat && (treatToday || i - lastTreatDay < TREAT_GAP_DAYS)) return false;
           const last = lastUsed.get(r.recipe_id);
           return last === undefined || i - last >= windowDays;
@@ -167,12 +192,14 @@ export function generatePlan(opts: GenOptions): GenResult {
         }
         const score = (r: Recipe) => {
           const last = lastUsed.get(r.recipe_id);
-          const gap = last === undefined ? 1000 : i - last; // never used / longest ago first
+          const gap = last === undefined ? 1000 * GAP_WEIGHT : (i - last) * GAP_WEIGHT; // never used / longest ago first
           const sameCuisineNow = chosen.filter((c) => c.cuisine === r.cuisine).length;
-          let s = (wantSoftFirst && k === 0 && isSoft(r) ? -SOFT_BONUS : 0) + sameCuisineNow * 1000 + (cuisineTotal.get(r.cuisine) ?? 0) * 10 - gap + (hash(r.recipe_id + i) % 7) + r.estimated_cost_sgd * COST_WEIGHT;
+          let s = (wantSoftFirst && k === 0 && isSoft(r) ? -SOFT_BONUS * GAP_WEIGHT : 0) + sameCuisineNow * 1000 + (cuisineTotal.get(r.cuisine) ?? 0) * 10 - gap + (hash(r.recipe_id + i) % 7) + r.estimated_cost_sgd * COST_WEIGHT;
           if (meatFreeWeekdays.length && !meatFreeDay && cls === "protein" && mainProtein(r) === "egg & tofu") s += 120; // keep egg and tofu mains available for meat-free days
-          if (cls === "protein" || cls === "onepot") s -= (recipeProtein(r) / 8) * PROTEIN_WEIGHT;
-          if (cls === "protein" || cls === "onepot") {
+          if (cls === "onedish" && meals && meals.includes("porridge")) s += r.meal === "porridge" ? PORRIDGE_BONUS * GAP_WEIGHT : 0; // lunch: lean towards porridge
+          if (cls === "onedish" && meals && !meals.includes("porridge") && /soup/i.test(r.name)) s += NOODLE_SOUP_PENALTY * GAP_WEIGHT; // dinner already has its own soup
+          if (cls === "protein" || cls === "onepot" || cls === "onedish") s -= (recipeProtein(r) / 8) * PROTEIN_WEIGHT * GAP_WEIGHT;
+          if (cls === "protein" || cls === "onepot" || cls === "onedish") {
             // spread chicken / pork / beef / fish / seafood: avoid a type already served today, prefer types not seen lately
             const t = mainProtein(r);
             s += typesToday.filter((x) => x === t).length * 400;
@@ -186,15 +213,18 @@ export function generatePlan(opts: GenOptions): GenResult {
         chosen.push(best);
         pickedToday.add(best.recipe_id);
         if (best.treat) treatToday = true;
-        if (cls === "protein" || cls === "onepot") typesToday.push(mainProtein(best));
+        if (cls === "protein" || cls === "onepot" || cls === "onedish") typesToday.push(mainProtein(best));
       }
       return chosen;
     };
 
-    const lunchProtein = pick("protein", 1, true);
-    const lunchVeg = pick("vegetable", 1, true);
+    const lunch: Recipe[] = lunchOne
+      ? pick("onedish", 1, true, ["porridge", "noodles", "sandwich"])
+      : [...pick("protein", 1, true), ...pick("vegetable", 1, true)];
     let dinner: Recipe[];
-    if (quick) {
+    if (noodleNight) {
+      dinner = [...pick("onedish", 1, true, ["noodles", "sandwich"]), ...pick("soup", 1)];
+    } else if (quick) {
       dinner = [...pick("onepot", 1, true), ...pick("soup", 1)];
     } else {
       dinner = [...pick("protein", 2, true), ...pick("vegetable", 2, true), ...pick("soup", 1)];
@@ -207,7 +237,7 @@ export function generatePlan(opts: GenOptions): GenResult {
       break;
     }
 
-    const day: PlannedDay = { date, slots: { lunch: [...lunchProtein, ...lunchVeg], dinner } };
+    const day: PlannedDay = { date, slots: { lunch, dinner } };
     for (const r of Object.values(day.slots).flat()) {
       lastUsed.set(r.recipe_id, i);
       cuisineTotal.set(r.cuisine, (cuisineTotal.get(r.cuisine) ?? 0) + 1);

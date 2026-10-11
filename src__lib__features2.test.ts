@@ -3,13 +3,14 @@ import { library, festivalLibrary } from "./sample-data";
 import { baselinePlan } from "./plan-data";
 import { generatePlan, isMeatFree } from "./generator";
 import { validatePlan, checkDay } from "./rules";
-import { suggestDinner } from "./dinner-mode";
+import { suggestDinner, suggestLunch } from "./dinner-mode";
 import { FESTIVALS, festivalDishes } from "./festivals";
 import { DEFAULT_PEOPLE, avoidWarnings, dishMatches } from "./people";
 import { FRUITS, dayProteinPerPerson, fruitFor, isCalciumRich, recipeProtein } from "./nutrition";
 import { buildShoppingList } from "./shopping";
 import { isMeatFreeDay } from "./servings";
 import { ingredientZh } from "./zh-ingredients";
+import { isSoft } from "./softness";
 
 let n = 0;
 const t = (name: string, f: () => void) => { f(); n++; console.log("ok -", name); };
@@ -104,5 +105,40 @@ t("family notes: avoid words match ingredients, types and allergens", () => {
   const people = DEFAULT_PEOPLE.map((p, k) => (k === 0 ? { ...p, avoid: "beef" } : p));
   assert.ok(avoidWarnings(day!, people).length > 0);
   assert.equal(avoidWarnings(day!, DEFAULT_PEOPLE).length, 0);
+});
+t("porridge menu has plain, fish, chicken and pork; noodles include bee hoon and kway teow; sandwiches exist", () => {
+  const od = library.filter((r) => r.dish_class === "onedish");
+  const por = od.filter((r) => r.meal === "porridge");
+  assert.ok(por.length >= 15);
+  assert.ok(por.some((r) => /^plain porridge/i.test(r.name)));
+  for (const k of ["fish", "chicken", "pork"]) assert.ok(por.some((r) => new RegExp(k, "i").test(r.name)), k);
+  assert.ok(od.some((r) => /bee hoon/i.test(r.name)) && od.some((r) => /kway teow/i.test(r.name)));
+  assert.ok(od.filter((r) => r.meal === "sandwich").length >= 5);
+  assert.ok(od.every((r) => r.steps && r.ingredients && r.name_zh));
+  assert.ok(por.every(isSoft));
+});
+t("lunch button: one-dish lunch and back, always valid", () => {
+  let tried = 0;
+  for (const d of baselinePlan.slice(0, 40)) {
+    const isOne = d.slots.lunch.some((r) => r.dish_class === "onedish");
+    const c = suggestLunch(baselinePlan, d.date, isOne ? "standard" : "onedish", library);
+    assert.ok(c.ok, `${d.date} ${c.ok ? "" : c.message}`);
+    if (c.ok) {
+      const days = baselinePlan.map((x) => (x.date === d.date ? { ...x, slots: { ...x.slots, lunch: c.dishes } } : x));
+      assert.deepEqual(validatePlan(days), [], d.date);
+      tried++;
+    }
+  }
+  assert.equal(tried, 40);
+});
+t("noodle-night button works on rice nights and is valid", () => {
+  const d = baselinePlan.find((x) => x.slots.dinner.length === 5) as (typeof baselinePlan)[number];
+  const c = suggestDinner(baselinePlan, d.date, "noodle", library);
+  assert.ok(c.ok && c.dishes.length === 2 && c.dishes[0].dish_class === "onedish" && c.dishes[0].meal !== "porridge");
+});
+t("another weekly pattern with different one-dish days still builds 90 valid days", () => {
+  const g = generatePlan({ startDate: "2026-10-12", days: 90, library, lunchOneDishWeekdays: [1, 3, 5], noodleDinnerWeekdays: [0, 6] });
+  assert.equal(g.days.length, 90);
+  assert.deepEqual(validatePlan(g.days), []);
 });
 console.log(`${n} passed`);

@@ -41,12 +41,17 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
           Quick one-pot meal: rice, protein and vegetables together. Cook the soup separately.
         </p>
       )}
-      {(recipe.dish_class === "protein" || recipe.dish_class === "onepot") && (
+      {(recipe.dish_class === "protein" || recipe.dish_class === "onepot" || recipe.dish_class === "onedish") && (
         <p className="rounded-lg border-2 border-sky-300 bg-sky-50 px-4 py-3 text-lg text-sky-900">{SENIOR_TIP}</p>
       )}
       {isCalciumRich(recipe) && <p className="text-lg"><span className="rounded-full bg-violet-100 px-3 py-1 font-semibold text-violet-900">Calcium-rich</span> Has tofu, greens or other calcium foods.</p>}
       {recipe.festival && <p className="text-lg"><span className="rounded-full bg-rose-100 px-3 py-1 font-semibold text-rose-900">Festival dish</span></p>}
       {keepsWell(recipe) && <p className="rounded-lg bg-stone-100 px-4 py-3 text-base text-stone-800">{LEFTOVER_TIP}</p>}
+      {recipe.dish_class === "onedish" && (
+        <p className="rounded-lg bg-indigo-50 px-4 py-3 text-lg font-medium text-indigo-900">
+          A complete {recipe.meal === "porridge" ? "porridge" : recipe.meal === "noodles" ? "noodle" : "sandwich"} meal with protein and vegetables. No rice dishes needed. At dinner, serve with the soup.
+        </p>
+      )}
       <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested.</p>
 
       {recipe.food_safety && (

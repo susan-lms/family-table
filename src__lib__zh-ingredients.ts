@@ -28,7 +28,7 @@ const RULES: Array<[RegExp, string]> = [
   [/white pepper|black pepper|peppercorns/, "胡椒"], [/five-spice/, "五香粉"], [/star anise/, "八角"], [/cinnamon/, "肉桂"],
   [/turmeric/, "姜黄"], [/curry powder/, "咖喱粉"], [/cumin/, "孜然"], [/paprika/, "红椒粉"], [/nutmeg/, "肉豆蔻"],
   [/oregano|thyme|rosemary|basil|dill|herbs/, "香草"], [/^salt$/, "盐"], [/cornflour/, "玉米粉"], [/plain flour/, "面粉"],
-  [/breadcrumbs/, "面包糠"], [/rolled oats/, "燕麦片"], [/glass noodles/, "冬粉"], [/cooked rice/, "隔夜饭"], [/^rice$/, "米"],
+  [/breadcrumbs/, "面包糠"], [/rolled oats/, "燕麦片"], [/glass noodles/, "冬粉"], [/bee hoon|vermicelli/, "米粉"], [/kway teow/, "河粉"], [/egg noodles/, "鸡蛋面"], [/mee sua/, "面线"], [/udon/, "乌冬面"], [/soba/, "荞麦面"], [/spaghetti/, "意大利面"], [/wholemeal bread/, "全麦面包"], [/wraps/, "薄饼皮"], [/yoghurt/, "酸奶"], [/tuna/, "金枪鱼"], [/cooked rice/, "隔夜饭"], [/^rice$/, "米"],
   [/chickpeas/, "鹰嘴豆"], [/white beans/, "白豆"], [/red lentils/, "红扁豆"], [/water/, "水"],
 ];
 
