@@ -1,5 +1,6 @@
 import type { Category, Ingredient, PlannedDay, Slot } from "./types";
 import { slotFactor } from "./servings";
+import { fruitFor } from "./nutrition";
 
 const SLOTS: Slot[] = ["lunch", "dinner"];
 
@@ -40,6 +41,14 @@ export function buildShoppingList(days: PlannedDay[]): { items: ShoppingItem[]; 
         }
       }
     }
+  }
+  // fruit after dinner (one kind a day, quantities for 8)
+  for (const day of days) {
+    const f = fruitFor(day.date);
+    const k = `${f.name.toLowerCase()}|${f.unit}`;
+    const existing = map.get(k);
+    if (existing) existing.qty += f.qty;
+    else map.set(k, { name: f.name, qty: f.qty, unit: f.unit, category: "Fruit" });
   }
   // whole items (eggs, lemons...) are bought in whole pieces
   for (const item of map.values()) if (item.unit === "piece") item.qty = Math.ceil(item.qty - 1e-9);

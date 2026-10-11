@@ -27,6 +27,7 @@ export interface Ingredient {
 export interface Recipe {
   recipe_id: string; // stable, never reused
   name: string;
+  name_zh?: string; // Chinese (simplified) name
   cuisine: Cuisine;
   dish_class: DishClass;
   servings_default: 8;
@@ -34,6 +35,7 @@ export interface Recipe {
   cook_time_minutes: number;
   estimated_cost_sgd: number; // placeholder estimate, not a real price
   is_sample: boolean; // true until a person has checked it
+  festival?: string; // festival-only dish (used by the festival menus, never by the normal plan)
   treat?: boolean; // deep-fried or rich dish: the planner allows at most 1 per 7 days
   ingredients?: Ingredient[]; // missing = "recipe details coming"
   steps?: string[];

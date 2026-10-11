@@ -10,3 +10,8 @@ export const slotFactor = (slot: Slot): number => SLOT_SERVINGS[slot] / RECIPE_S
 export const QUICK_WEEKDAYS = [1, 3, 5];
 export const isQuickNight = (isoDate: string, quickWeekdays: number[] = QUICK_WEEKDAYS): boolean =>
   quickWeekdays.includes(new Date(isoDate + "T00:00:00Z").getUTCDay());
+
+/** Meat-free days (no meat, fish or seafood all day). Default: Thursday. */
+export const MEAT_FREE_WEEKDAYS = [4];
+export const isMeatFreeDay = (isoDate: string, days: number[] = MEAT_FREE_WEEKDAYS): boolean =>
+  days.includes(new Date(isoDate + "T00:00:00Z").getUTCDay());

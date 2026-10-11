@@ -72,7 +72,7 @@ test("library check: 14 days need 30 protein, 30 vegetable, 14 soup and 6 one-po
   assert.deepEqual(need, { protein: 30, vegetable: 30, soup: 14, onepot: 6 });
 });
 
-test("the real library builds all 90 days with zero rule problems and all 10 cuisines", () => {
+test("the real library builds all 90 days with zero rule problems and all 9 cuisines (Indian is switched off)", () => {
   const short = libraryStatus(realLibrary).filter((x) => x.have < x.need);
   assert.equal(short.length, 0);
   const r = generatePlan({ startDate: "2026-10-12", days: 90, library: realLibrary });
@@ -80,7 +80,8 @@ test("the real library builds all 90 days with zero rule problems and all 10 cui
   assert.equal(r.problems.length, 0);
   assert.deepEqual(validatePlan(r.days), []);
   const seen = new Set(r.days.flatMap((d) => [...d.slots.lunch, ...d.slots.dinner]).map((x) => x.cuisine));
-  assert.equal(seen.size, 10);
+  assert.equal(seen.size, 9);
+  assert.ok(!seen.has("Indian"));
 });
 
 test("real plan serves chicken, pork, beef, fish and seafood regularly (at least 15 times each in 90 days)", () => {
@@ -110,7 +111,7 @@ test("estimated gap: the big test library has a sensible gap, and the real libra
 
 test("new cuisines exist in the real library", () => {
   const cuisines = new Set(realLibrary.map((r) => r.cuisine));
-  for (const c of ["Thai", "Indonesian", "Malaysian", "Indian"]) assert.ok(cuisines.has(c as Cuisine), c);
+  for (const c of ["Thai", "Indonesian", "Malaysian"]) assert.ok(cuisines.has(c as Cuisine), c);
 });
 
 test("every dish served has ingredients, steps and a low oil/salt/sugar note", () => {

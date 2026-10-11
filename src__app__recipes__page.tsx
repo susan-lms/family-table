@@ -4,10 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { library } from "@/lib/sample-data";
 import { CLASS_LABELS, estimatedGapDays, generatePlan, libraryStatus } from "@/lib/generator";
+import { isCalciumRich } from "@/lib/nutrition";
+import { isSoft } from "@/lib/softness";
 import { PROTEIN_TYPES, mainProtein } from "@/lib/protein";
 
 const TYPES = ["all", "onepot", "protein", "vegetable", "soup"] as const;
-const CUISINES = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian", "Indian"];
+const CUISINES = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian"];
 const GOAL_GAP_DAYS = 60;
 
 export default function Recipes() {
@@ -15,6 +17,7 @@ export default function Recipes() {
   const [type, setType] = useState<(typeof TYPES)[number]>("all");
   const [cuisine, setCuisine] = useState("All");
   const [meat, setMeat] = useState("All");
+  const [softOnly, setSoftOnly] = useState(false);
 
   const status = libraryStatus(library);
   const totalHave = status.reduce((s, x) => s + x.have, 0);
@@ -30,7 +33,8 @@ export default function Recipes() {
       (type === "all" || r.dish_class === type) &&
       (cuisine === "All" || r.cuisine === cuisine) &&
       (meat === "All" || mainProtein(r) === meat) &&
-      r.name.toLowerCase().includes(q.trim().toLowerCase()),
+      (!softOnly || isSoft(r)) &&
+      (r.name.toLowerCase().includes(q.trim().toLowerCase()) || (r.name_zh ?? "").includes(q.trim())),
   );
 
   return (
@@ -81,7 +85,7 @@ export default function Recipes() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name"
+          placeholder="Search by name 搜索"
           aria-label="Search recipes by name"
           className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-lg"
         />
@@ -118,6 +122,13 @@ export default function Recipes() {
             </button>
           ))}
         </div>
+        <button
+          onClick={() => setSoftOnly(!softOnly)}
+          aria-pressed={softOnly}
+          className={`rounded-full px-4 py-2 text-base font-semibold ${softOnly ? "bg-sky-700 text-white" : "bg-sky-100 text-sky-900"}`}
+        >
+          Soft dishes only (easy to chew)
+        </button>
         <p className="text-base text-stone-600">Showing {shown.length} of {library.length} dishes</p>
       </section>
 
@@ -127,7 +138,7 @@ export default function Recipes() {
         {shown.map((r) => (
           <li key={r.recipe_id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-stone-300 bg-white px-4 py-3">
             <span>
-              <span className="block text-lg font-semibold">{r.name}</span>
+              <span className="block text-lg font-semibold">{r.name} {r.name_zh}{isSoft(r) ? " · Soft" : ""}{isCalciumRich(r) ? " · Calcium" : ""}{r.treat ? " · Treat" : ""}</span>
               <span className="block text-base text-stone-600">
                 {r.cuisine} · {CLASS_LABELS[r.dish_class]} · {mainProtein(r)} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min
               </span>

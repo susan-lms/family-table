@@ -5,6 +5,7 @@ const links = [
   { href: "/planner", label: "Week" },
   { href: "/recipes", label: "Recipes" },
   { href: "/shopping", label: "Shopping" },
+  { href: "/more", label: "More" },
 ];
 
 export default function Nav() {
@@ -18,7 +19,7 @@ export default function Nav() {
         <Link
           key={l.href}
           href={l.href}
-          className="flex-1 md:flex-none px-4 py-4 text-center text-lg font-semibold text-stone-800 hover:bg-emerald-50 md:px-6"
+          className="flex-1 md:flex-none px-1 py-4 text-center text-lg font-semibold text-stone-800 hover:bg-emerald-50 md:px-6"
         >
           {l.label}
         </Link>

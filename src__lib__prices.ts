@@ -53,9 +53,9 @@ export const PRICE_RULES: Rule[] = [
   { re: /^water$|warm water|cold water/i, l: 0 },
   { re: /wrappers/i, each: 0.12 }, { re: /puff pastry|curry puff pastry/i, each: 0.25 },
   { re: /noodles|vermicelli/i, kg: 4.5 }, { re: /lettuce/i, each: 1.5 }, { re: /snow peas/i, kg: 9 },
-  { re: /chicken wings/i, kg: 7 },
+  { re: /chicken wings/i, kg: 7 }, { re: /asparagus/i, kg: 12 }, { re: /taro/i, kg: 4 }, { re: /peanuts/i, kg: 8 },
   { re: /salt$/i, tsp: 0.005 },
-  { re: /pepper|paprika|cumin|turmeric|cinnamon|nutmeg|coriander|masala|curry|chilli powder|mustard|thyme|oregano|basil|herbs|dill|star anise|peppercorn/i, tsp: 0.12, each: 0.1 },
+  { re: /pepper|paprika|cumin|turmeric|cinnamon|nutmeg|coriander|masala|curry|chilli powder|mustard|thyme|rosemary|oregano|basil|herbs|dill|star anise|peppercorn/i, tsp: 0.12, each: 0.1 },
 ];
 
 const CATEGORY_KG: Record<string, number> = { Vegetables: 4, Fruit: 4, Meat: 10, Seafood: 22, "Eggs & dairy": 6, Pantry: 6, Other: 4 };

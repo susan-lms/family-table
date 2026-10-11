@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { SENIOR_TIP, isSoft } from "@/lib/softness";
+import { LEFTOVER_TIP, isCalciumRich, keepsWell } from "@/lib/nutrition";
+import { ingredientZh } from "@/lib/zh-ingredients";
 import type { Recipe } from "@/lib/types";
 
 const fmt = (n: number) => `${+n.toFixed(2)}`;
@@ -17,6 +20,8 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
     <div className="space-y-5">
       <Link href="/" className="text-lg font-semibold text-emerald-800 underline">← Back</Link>
       <h1 className="text-3xl font-bold">{recipe.name}</h1>
+      {recipe.name_zh && <p className="text-2xl font-semibold text-stone-700">{recipe.name_zh}</p>}
+      {isSoft(recipe) && <p className="text-lg"><span className="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-900">Soft</span> Easy to chew for the seniors.</p>}
       <p className="text-lg">
         For {servings} people · Prep {recipe.prep_time_minutes} min · Cook {recipe.cook_time_minutes} min
       </p>
@@ -36,6 +41,12 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
           Quick one-pot meal: rice, protein and vegetables together. Cook the soup separately.
         </p>
       )}
+      {(recipe.dish_class === "protein" || recipe.dish_class === "onepot") && (
+        <p className="rounded-lg border-2 border-sky-300 bg-sky-50 px-4 py-3 text-lg text-sky-900">{SENIOR_TIP}</p>
+      )}
+      {isCalciumRich(recipe) && <p className="text-lg"><span className="rounded-full bg-violet-100 px-3 py-1 font-semibold text-violet-900">Calcium-rich</span> Has tofu, greens or other calcium foods.</p>}
+      {recipe.festival && <p className="text-lg"><span className="rounded-full bg-rose-100 px-3 py-1 font-semibold text-rose-900">Festival dish</span></p>}
+      {keepsWell(recipe) && <p className="rounded-lg bg-stone-100 px-4 py-3 text-base text-stone-800">{LEFTOVER_TIP}</p>}
       <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested.</p>
 
       {recipe.food_safety && (
@@ -58,7 +69,7 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
               <label className="flex cursor-pointer items-center gap-3 py-3 text-lg">
                 <input type="checkbox" className="h-6 w-6" checked={!!have[n]} onChange={() => setHave((s) => ({ ...s, [n]: !s[n] }))} />
                 <span className={have[n] ? "text-stone-400 line-through" : ""}>
-                  <strong>{fmt(ing.qty * factor)} {ing.unit === "piece" ? "pcs" : ing.unit}</strong> {ing.name}{ing.prep ? `, ${ing.prep}` : ""}
+                  <strong>{fmt(ing.qty * factor)} {ing.unit === "piece" ? "pcs" : ing.unit}</strong> {ing.name}{ingredientZh(ing.name) ? ` ${ingredientZh(ing.name)}` : ""}{ing.prep ? `, ${ing.prep}` : ""}
                 </span>
               </label>
             </li>

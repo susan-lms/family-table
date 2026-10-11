@@ -4,9 +4,10 @@ import { useState } from "react";
 import { library } from "@/lib/sample-data";
 import { repeatConflict } from "@/lib/rules";
 import type { Cuisine, PlannedDay, Recipe } from "@/lib/types";
+import { isSoft } from "@/lib/softness";
 import { mainProtein } from "@/lib/protein";
 
-const CUISINES: Array<"All" | Cuisine> = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian", "Indian"];
+const CUISINES: Array<"All" | Cuisine> = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian"];
 
 interface Props {
   date: string;
@@ -30,7 +31,7 @@ export default function SwapDialog({ date, allDays, current, message, onPick, on
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold">Change dish</h2>
-            <p className="mt-1 text-lg text-stone-700">Now: <strong>{current.name}</strong></p>
+            <p className="mt-1 text-lg text-stone-700">Now: <strong>{current.name} {current.name_zh}</strong></p>
           </div>
           <button onClick={onClose} className="rounded-xl bg-stone-200 px-4 py-3 text-lg font-semibold">Close</button>
         </div>
@@ -63,7 +64,7 @@ export default function SwapDialog({ date, allDays, current, message, onPick, on
                   onClick={() => onPick(r)}
                   className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-left disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400"
                 >
-                  <span className="block text-lg font-semibold">{r.name}</span>
+                  <span className="block text-lg font-semibold">{r.name} {r.name_zh}{isSoft(r) ? " · Soft" : ""}{r.treat ? " · Treat" : ""}</span>
                   <span className="block text-base">
                     {r.cuisine}{r.dish_class === "protein" || r.dish_class === "onepot" ? ` · ${mainProtein(r)}` : ""} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min · S${r.estimated_cost_sgd.toFixed(2)} for 8 (estimate)
                   </span>

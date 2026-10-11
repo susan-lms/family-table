@@ -4,3 +4,12 @@
 
 html { font-size: 18px; }
 body { background: #faf8f4; color: #1f2933; }
+
+html.big { font-size: 22px; }
+@media print {
+  html, html.big { font-size: 14px; }
+  .no-print { display: none !important; }
+  body { background: #fff; padding: 0; }
+  main { max-width: none; padding: 0; }
+  .print-card { break-inside: avoid; box-shadow: none; margin-bottom: 8px; padding: 8px; }
+}

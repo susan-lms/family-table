@@ -1,7 +1,9 @@
 import type { DishClass, PlannedDay, Recipe } from "./types";
 import { dayCost } from "./rules";
-import { QUICK_WEEKDAYS, isQuickNight } from "./servings";
+import { MEAT_FREE_WEEKDAYS, QUICK_WEEKDAYS, isMeatFreeDay, isQuickNight } from "./servings";
 import { mainProtein, type ProteinType } from "./protein";
+import { isSoft } from "./softness";
+import { recipeProtein } from "./nutrition";
 
 export const CLASS_LABELS: Record<string, string> = {
   breakfast_item: "Breakfast items",
@@ -94,7 +96,14 @@ export interface GenOptions {
   windowDays?: number; // default 14
   budget?: { min: number; max: number }; // default S$0-80 (only "over" is a warning)
   quickWeekdays?: number[]; // weekdays with a quick one-pot dinner (0 = Sunday). Default Mon, Wed, Fri.
+  meatFreeWeekdays?: number[]; // weekdays with no meat, fish or seafood (eggs and tofu are fine). Default Thursday.
 }
+
+/** Dishes allowed on a meat-free day: no meat, fish or seafood in them. */
+export const isMeatFree = (r: Recipe): boolean => {
+  const t = mainProtein(r);
+  return t === "egg & tofu" || t === "meat-free";
+};
 
 export interface GenResult {
   days: PlannedDay[];
@@ -105,6 +114,12 @@ export interface GenResult {
 
 /** How strongly cheaper dishes are preferred. 0 = ignore cost. Never overrides the 14-day rule. */
 const COST_WEIGHT = 4;
+
+/** Preference for soft, easy-to-chew dishes (two seniors aged 85+): every lunch and dinner should have at least one. */
+const SOFT_BONUS = 1500;
+
+/** Preference for dishes with more protein (the seniors need enough protein). Points per gram of protein per person. */
+const PROTEIN_WEIGHT = 100;
 
 /** A treat (deep-fried) dish may appear at most once in any 7 days. */
 export const TREAT_GAP_DAYS = 7;
@@ -118,6 +133,7 @@ export function generatePlan(opts: GenOptions): GenResult {
   const windowDays = opts.windowDays ?? 14;
   const budget = opts.budget ?? { min: 0, max: 80 };
   const quickWeekdays = opts.quickWeekdays ?? QUICK_WEEKDAYS;
+  const meatFreeWeekdays = opts.meatFreeWeekdays ?? MEAT_FREE_WEEKDAYS;
   const lastUsed = new Map<string, number>();
   const cuisineTotal = new Map<string, number>();
   const typeDays = new Map<ProteinType, number[]>(); // days on which each protein type was served
@@ -128,17 +144,19 @@ export function generatePlan(opts: GenOptions): GenResult {
 
   for (let i = 0; i < opts.days; i++) {
     const date = addDays(opts.startDate, i);
-    const quick = isQuickNight(date, quickWeekdays);
+    const meatFreeDay = isMeatFreeDay(date, meatFreeWeekdays);
+    const quick = isQuickNight(date, quickWeekdays) && !meatFreeDay; // one-pot meals all have meat or fish, so a meat-free day gets a normal dinner
     const pickedToday = new Set<string>();
     const typesToday: ProteinType[] = [];
     let treatToday = false;
     let missing: DishClass | null = null;
 
-    const pick = (cls: DishClass, count: number): Recipe[] => {
+    const pick = (cls: DishClass, count: number, wantSoftFirst = false): Recipe[] => {
       const chosen: Recipe[] = [];
       for (let k = 0; k < count; k++) {
         const eligible = opts.library.filter((r) => {
           if (r.dish_class !== cls || pickedToday.has(r.recipe_id)) return false;
+          if (meatFreeDay && !isMeatFree(r)) return false;
           if (r.treat && (treatToday || i - lastTreatDay < TREAT_GAP_DAYS)) return false;
           const last = lastUsed.get(r.recipe_id);
           return last === undefined || i - last >= windowDays;
@@ -151,7 +169,9 @@ export function generatePlan(opts: GenOptions): GenResult {
           const last = lastUsed.get(r.recipe_id);
           const gap = last === undefined ? 1000 : i - last; // never used / longest ago first
           const sameCuisineNow = chosen.filter((c) => c.cuisine === r.cuisine).length;
-          let s = sameCuisineNow * 1000 + (cuisineTotal.get(r.cuisine) ?? 0) * 10 - gap + (hash(r.recipe_id + i) % 7) + r.estimated_cost_sgd * COST_WEIGHT;
+          let s = (wantSoftFirst && k === 0 && isSoft(r) ? -SOFT_BONUS : 0) + sameCuisineNow * 1000 + (cuisineTotal.get(r.cuisine) ?? 0) * 10 - gap + (hash(r.recipe_id + i) % 7) + r.estimated_cost_sgd * COST_WEIGHT;
+          if (meatFreeWeekdays.length && !meatFreeDay && cls === "protein" && mainProtein(r) === "egg & tofu") s += 120; // keep egg and tofu mains available for meat-free days
+          if (cls === "protein" || cls === "onepot") s -= (recipeProtein(r) / 8) * PROTEIN_WEIGHT;
           if (cls === "protein" || cls === "onepot") {
             // spread chicken / pork / beef / fish / seafood: avoid a type already served today, prefer types not seen lately
             const t = mainProtein(r);
@@ -171,13 +191,13 @@ export function generatePlan(opts: GenOptions): GenResult {
       return chosen;
     };
 
-    const lunchProtein = pick("protein", 1);
-    const lunchVeg = pick("vegetable", 1);
+    const lunchProtein = pick("protein", 1, true);
+    const lunchVeg = pick("vegetable", 1, true);
     let dinner: Recipe[];
     if (quick) {
-      dinner = [...pick("onepot", 1), ...pick("soup", 1)];
+      dinner = [...pick("onepot", 1, true), ...pick("soup", 1)];
     } else {
-      dinner = [...pick("protein", 2), ...pick("vegetable", 2), ...pick("soup", 1)];
+      dinner = [...pick("protein", 2, true), ...pick("vegetable", 2, true), ...pick("soup", 1)];
     }
 
     if (missing) {
