@@ -4,18 +4,38 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Recipe } from "@/lib/types";
 
-export default function CookMode({ recipe }: { recipe: Recipe }) {
+const fmt = (n: number) => `${+n.toFixed(2)}`;
+
+export default function CookMode({ recipe, initialServings = 8 }: { recipe: Recipe; initialServings?: 4 | 8 }) {
   const steps = recipe.steps ?? [];
   const [i, setI] = useState(0);
   const [have, setHave] = useState<Record<number, boolean>>({});
+  const [servings, setServings] = useState<number>(initialServings);
+  const factor = servings / 8;
 
   return (
     <div className="space-y-5">
       <Link href="/" className="text-lg font-semibold text-emerald-800 underline">← Back</Link>
       <h1 className="text-3xl font-bold">{recipe.name}</h1>
       <p className="text-lg">
-        For 8 people · Prep {recipe.prep_time_minutes} min · Cook {recipe.cook_time_minutes} min
+        For {servings} people · Prep {recipe.prep_time_minutes} min · Cook {recipe.cook_time_minutes} min
       </p>
+      <div className="flex gap-2" role="group" aria-label="Number of people">
+        {[4, 8].map((n) => (
+          <button
+            key={n}
+            onClick={() => setServings(n)}
+            className={`rounded-full px-5 py-3 text-lg font-semibold ${servings === n ? "bg-emerald-700 text-white" : "bg-stone-200"}`}
+          >
+            {n} people
+          </button>
+        ))}
+      </div>
+      {recipe.dish_class === "onepot" && (
+        <p className="rounded-lg bg-emerald-100 px-4 py-3 text-lg font-medium text-emerald-900">
+          Quick one-pot meal: rice, protein and vegetables together. Cook the soup separately.
+        </p>
+      )}
       <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested.</p>
 
       {recipe.food_safety && (
@@ -38,7 +58,7 @@ export default function CookMode({ recipe }: { recipe: Recipe }) {
               <label className="flex cursor-pointer items-center gap-3 py-3 text-lg">
                 <input type="checkbox" className="h-6 w-6" checked={!!have[n]} onChange={() => setHave((s) => ({ ...s, [n]: !s[n] }))} />
                 <span className={have[n] ? "text-stone-400 line-through" : ""}>
-                  <strong>{ing.qty} {ing.unit === "piece" ? "pcs" : ing.unit}</strong> {ing.name}{ing.prep ? `, ${ing.prep}` : ""}
+                  <strong>{fmt(ing.qty * factor)} {ing.unit === "piece" ? "pcs" : ing.unit}</strong> {ing.name}{ing.prep ? `, ${ing.prep}` : ""}
                 </span>
               </label>
             </li>

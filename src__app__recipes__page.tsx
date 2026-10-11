@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { library } from "@/lib/sample-data";
 import { CLASS_LABELS, estimatedGapDays, generatePlan, libraryStatus } from "@/lib/generator";
+import { PROTEIN_TYPES, mainProtein } from "@/lib/protein";
 
-const TYPES = ["all", "breakfast_item", "snack", "protein", "vegetable", "soup"] as const;
+const TYPES = ["all", "onepot", "protein", "vegetable", "soup"] as const;
 const CUISINES = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian", "Indian"];
 const GOAL_GAP_DAYS = 60;
 
@@ -13,6 +14,7 @@ export default function Recipes() {
   const [q, setQ] = useState("");
   const [type, setType] = useState<(typeof TYPES)[number]>("all");
   const [cuisine, setCuisine] = useState("All");
+  const [meat, setMeat] = useState("All");
 
   const status = libraryStatus(library);
   const totalHave = status.reduce((s, x) => s + x.have, 0);
@@ -27,6 +29,7 @@ export default function Recipes() {
     (r) =>
       (type === "all" || r.dish_class === type) &&
       (cuisine === "All" || r.cuisine === cuisine) &&
+      (meat === "All" || mainProtein(r) === meat) &&
       r.name.toLowerCase().includes(q.trim().toLowerCase()),
   );
 
@@ -35,7 +38,7 @@ export default function Recipes() {
       <h1 className="text-3xl font-bold">Recipes</h1>
 
       <section className="rounded-2xl border border-stone-300 bg-white p-5">
-        <h2 className="text-xl font-bold">Is there enough for 90 days?</h2>
+        <h2 className="text-xl font-bold">Is there enough for 90 days of lunch and dinner?</h2>
         <p className="mt-1 text-lg">
           A dish can&apos;t come back within 14 days. So we need at least <strong>{totalNeed}</strong> different dishes. We have <strong>{totalHave}</strong>.
         </p>
@@ -104,6 +107,17 @@ export default function Recipes() {
             </button>
           ))}
         </div>
+        <div className="flex flex-wrap gap-2">
+          {["All", ...PROTEIN_TYPES].map((m) => (
+            <button
+              key={m}
+              onClick={() => setMeat(m)}
+              className={`rounded-full px-4 py-2 text-base font-semibold ${meat === m ? "bg-emerald-700 text-white" : "bg-stone-200"}`}
+            >
+              {m === "All" ? "Any meat or fish" : m}
+            </button>
+          ))}
+        </div>
         <p className="text-base text-stone-600">Showing {shown.length} of {library.length} dishes</p>
       </section>
 
@@ -115,7 +129,7 @@ export default function Recipes() {
             <span>
               <span className="block text-lg font-semibold">{r.name}</span>
               <span className="block text-base text-stone-600">
-                {r.cuisine} · {CLASS_LABELS[r.dish_class]} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min
+                {r.cuisine} · {CLASS_LABELS[r.dish_class]} · {mainProtein(r)} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min
               </span>
             </span>
             {r.steps ? (

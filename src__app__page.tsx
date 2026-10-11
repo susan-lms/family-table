@@ -18,7 +18,7 @@ export default function Home() {
         </p>
       )}
       <p className="rounded-lg bg-amber-100 px-3 py-2 text-base text-amber-900">
-        Prices are rough estimates, not live supermarket prices. Tap <strong>Change</strong> on any dish to swap it.
+        Lunch is for 4 people, dinner for 8. Prices are rough estimates, not live supermarket prices. Tap <strong>Change</strong> on any dish to swap it.
       </p>
       <DayCard date={date} />
       <Link href="/planner" className="inline-block text-lg font-semibold text-emerald-800 underline">See the whole week →</Link>

@@ -1,7 +1,10 @@
-import type { Cuisine, DishClass, PlannedDay, Recipe } from "./types";
+import type { Cuisine, DishClass, Recipe } from "./types";
 import { batch1 } from "./recipes-batch1";
 import { batch2a } from "./recipes-batch2a";
 import { batch2b } from "./recipes-batch2b";
+import { onepot } from "./recipes-onepot";
+import { batch6Proteins, batch6Soups } from "./recipes-batch6";
+import { batch5 } from "./recipes-batch5";
 import { batch4 } from "./recipes-batch4";
 import { batch3all } from "./recipes-batch3";
 import { estimateRecipeCost } from "./prices";
@@ -103,63 +106,12 @@ export const winterMelonSoup: Recipe = base("R-CN-004", "Winter melon soup", "Ch
   oil_salt_sugar_note: "No stock cube. The flavour comes from the ribs and ginger. Salt is optional.",
 });
 
-const day1: PlannedDay = {
-  date: "2026-10-12",
-  slots: {
-    breakfast: [
-      base("R-CN-010", "Steamed chicken buns", "Chinese", "breakfast_item", 30, 20, 4),
-      base("R-WE-010", "Hard-boiled eggs", "Western", "breakfast_item", 2, 12, 2.5),
-    ],
-    morning_tea: [base("R-WE-011", "Banana-oat mini muffins", "Western", "snack", 15, 20, 3)],
-    lunch: [gingerChicken, garlicBroccoli],
-    afternoon_tea: [
-      base("R-FU-010", "Steamed sweet potato pieces", "Fusion", "snack", 5, 20, 2),
-      base("R-WE-012", "Small steamed corn portions", "Western", "snack", 3, 15, 2),
-    ],
-    dinner: [
-      base("R-CN-011", "Soy-braised chicken (reduced sodium)", "Chinese", "protein", 15, 35, 6.5),
-      gingerFish,
-      base("R-CN-012", "Lightly stir-fried bok choy", "Chinese", "vegetable", 8, 5, 3),
-      base("R-CN-013", "Carrot and mushroom stir-fry", "Chinese", "vegetable", 10, 8, 3.5),
-      winterMelonSoup,
-    ],
-  },
-};
-
-const day2: PlannedDay = {
-  date: "2026-10-13",
-  slots: {
-    breakfast: [
-      base("R-JP-010", "Rice porridge with silken tofu", "Japanese", "breakfast_item", 5, 30, 3),
-      base("R-JP-011", "Tamagoyaki (rolled omelette, no sugar)", "Japanese", "breakfast_item", 10, 10, 3),
-    ],
-    morning_tea: [base("R-KR-010", "Steamed pumpkin cubes", "Korean", "snack", 8, 15, 2)],
-    lunch: [
-      base("R-ES-010", "Baked chicken with paprika and garlic", "Spanish", "protein", 15, 45, 8),
-      base("R-ES-011", "Roasted peppers and courgette", "Spanish", "vegetable", 10, 30, 4),
-    ],
-    afternoon_tea: [base("R-WE-013", "Wholemeal mini sandwiches with egg", "Western", "snack", 15, 0, 3.5)],
-    dinner: [
-      base("R-KR-011", "Beef and radish stew", "Korean", "protein", 15, 60, 11),
-      base("R-FU-011", "Steamed tofu with mushroom topping", "Fusion", "protein", 10, 15, 5),
-      base("R-KR-012", "Seasoned spinach (namul)", "Korean", "vegetable", 10, 4, 3),
-      base("R-JP-012", "Simmered pumpkin and green beans", "Japanese", "vegetable", 10, 15, 3.5),
-      base("R-JP-013", "Miso soup with tofu (low-salt)", "Japanese", "soup", 8, 10, 3),
-    ],
-  },
-};
-
-export const sampleDays: PlannedDay[] = [day1, day2];
-
 export const SLOT_LABELS: Record<string, string> = {
-  breakfast: "Breakfast",
-  morning_tea: "Morning tea break",
-  lunch: "Lunch",
-  afternoon_tea: "Afternoon tea break",
-  dinner: "Dinner",
+  lunch: "Lunch (4 people)",
+  dinner: "Dinner (8 people)",
 };
 
-export const SLOT_ORDER = ["breakfast", "morning_tea", "lunch", "afternoon_tea", "dinner"] as const;
+export const SLOT_ORDER = ["lunch", "dinner"] as const;
 
 /** Extra dishes you can swap in. SAMPLE DATA: only roast chicken has full steps so far. */
 export const roastChicken: Recipe = base("R-WE-001", "Roast chicken with garlic and lemon", "Western", "protein", 15, 45, 9, {
@@ -190,42 +142,16 @@ export const roastChicken: Recipe = base("R-WE-001", "Roast chicken with garlic 
 
 export const alternatives: Recipe[] = [
   roastChicken,
-  // Protein dishes
-  base("R-WE-002", "Baked salmon with lemon and herbs", "Western", "protein", 10, 20, 14),
-  base("R-JP-001", "Teriyaki-style chicken (low sugar)", "Japanese", "protein", 10, 25, 8),
-  base("R-KR-001", "Beef bulgogi-style (low sugar)", "Korean", "protein", 15, 10, 12),
-  base("R-ES-001", "Garlic prawns", "Spanish", "protein", 10, 8, 13),
-  base("R-FU-001", "Steamed egg with minced chicken", "Fusion", "protein", 10, 15, 5),
-  base("R-CN-020", "Braised tofu with mushrooms", "Chinese", "protein", 10, 20, 4.5),
   // Vegetable dishes
-  base("R-CN-021", "Stir-fried kailan with ginger", "Chinese", "vegetable", 8, 6, 3.5),
-  base("R-WE-003", "Roasted mixed vegetables", "Western", "vegetable", 15, 30, 4.5),
-  base("R-KR-002", "Cucumber salad (no sugar)", "Korean", "vegetable", 10, 0, 3),
-  base("R-JP-002", "Steamed cabbage with sesame", "Japanese", "vegetable", 8, 8, 3),
-  base("R-ES-002", "Sautéed spinach with garlic", "Spanish", "vegetable", 8, 5, 3.5),
-  base("R-FU-002", "Steamed pumpkin and okra", "Fusion", "vegetable", 10, 15, 4),
-  // Soups
-  base("R-CN-022", "Tomato and egg soup", "Chinese", "soup", 10, 20, 3.5),
-  base("R-WE-004", "Chicken and sweetcorn soup", "Western", "soup", 10, 40, 5),
-  base("R-ES-003", "White bean and vegetable soup", "Spanish", "soup", 15, 45, 4.5),
-  base("R-JP-003", "Clear mushroom soup", "Japanese", "soup", 8, 15, 3.5),
   // Tea-break snacks
-  base("R-FU-003", "Papaya cubes", "Fusion", "snack", 5, 0, 3),
-  base("R-WE-005", "Baked sweet potato wedges", "Western", "snack", 5, 30, 2.5),
-  base("R-JP-004", "Unsalted edamame", "Japanese", "snack", 2, 6, 3),
-  base("R-ES-004", "Mini wholemeal egg wraps", "Spanish", "snack", 10, 8, 3.5),
-  base("R-CN-023", "Steamed yam cubes", "Chinese", "snack", 8, 20, 2.5),
-  // Breakfast items
-  base("R-WE-006", "Oatmeal with sliced banana (no added sugar)", "Western", "breakfast_item", 3, 10, 2.5),
-  base("R-WE-007", "Wholemeal toast with scrambled egg", "Western", "breakfast_item", 5, 8, 3),
-  base("R-CN-024", "Steamed egg custard", "Chinese", "breakfast_item", 5, 12, 2.5),
-  base("R-KR-005", "Pumpkin porridge", "Korean", "breakfast_item", 10, 30, 3),
-  base("R-ES-005", "Potato omelette wedges (less oil)", "Spanish", "breakfast_item", 15, 25, 3.5),
-  base("R-CN-025", "Steamed vegetable buns", "Chinese", "breakfast_item", 30, 15, 3.5),
   ...batch1,
   ...batch2a,
   ...batch2b,
   ...batch4,
+  ...batch5,
+  ...onepot,
+  ...batch6Proteins,
+  ...batch6Soups,
 ];
 
 /**
@@ -233,8 +159,9 @@ export const alternatives: Recipe[] = [
  * cut to 60% of a "single main dish" amount (about 110 g raw per person per dish).
  */
 const MEAT_FACTOR = 0.6;
+const PRESIZED = new Set(batch6Proteins.map((r) => r.recipe_id)); // already written at the healthy size
 const portion = (r: Recipe): Recipe => {
-  if (r.dish_class !== "protein" || !r.ingredients) return r;
+  if (r.dish_class !== "protein" || !r.ingredients || PRESIZED.has(r.recipe_id)) return r;
   return {
     ...r,
     ingredients: r.ingredients.map((g) => {
@@ -246,12 +173,12 @@ const portion = (r: Recipe): Recipe => {
 };
 
 /** Every dish the app knows about (the days above plus the swap choices), each once. Costs are ROUGH ESTIMATES from prices.ts. */
-export const library: Recipe[] = (() => {
+export const allRecipes: Recipe[] = (() => {
   const seen = new Set<string>();
   const out: Recipe[] = [];
   const all = [
     ...batch3all,
-    ...sampleDays.flatMap((d) => SLOT_ORDER.flatMap((s) => d.slots[s])),
+    gingerChicken, garlicBroccoli, gingerFish, winterMelonSoup,
     ...alternatives,
   ];
   for (const r0 of all) {
@@ -263,6 +190,10 @@ export const library: Recipe[] = (() => {
   }
   return out;
 })();
+
+/** Dish types served at lunch and dinner. Breakfast items and snacks are kept in the data but not planned (the household asked for lunch and dinner only). */
+const SERVED = new Set(["protein", "vegetable", "soup", "onepot"]);
+export const library: Recipe[] = allRecipes.filter((r) => SERVED.has(r.dish_class));
 
 export function findRecipe(id: string): Recipe | undefined {
   return library.find((r) => r.recipe_id === id);

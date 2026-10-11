@@ -4,6 +4,7 @@ import { useState } from "react";
 import { library } from "@/lib/sample-data";
 import { repeatConflict } from "@/lib/rules";
 import type { Cuisine, PlannedDay, Recipe } from "@/lib/types";
+import { mainProtein } from "@/lib/protein";
 
 const CUISINES: Array<"All" | Cuisine> = ["All", "Chinese", "Western", "Japanese", "Korean", "Fusion", "Spanish", "Thai", "Indonesian", "Malaysian", "Indian"];
 
@@ -64,7 +65,7 @@ export default function SwapDialog({ date, allDays, current, message, onPick, on
                 >
                   <span className="block text-lg font-semibold">{r.name}</span>
                   <span className="block text-base">
-                    {r.cuisine} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min · S${r.estimated_cost_sgd.toFixed(2)} (estimate)
+                    {r.cuisine}{r.dish_class === "protein" || r.dish_class === "onepot" ? ` · ${mainProtein(r)}` : ""} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min · S${r.estimated_cost_sgd.toFixed(2)} for 8 (estimate)
                   </span>
                   {conflict ? (
                     <span className="block text-base font-medium text-red-700">Not available: {conflict}</span>

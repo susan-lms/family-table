@@ -1,4 +1,7 @@
-import type { Category, Ingredient, PlannedDay } from "./types";
+import type { Category, Ingredient, PlannedDay, Slot } from "./types";
+import { slotFactor } from "./servings";
+
+const SLOTS: Slot[] = ["lunch", "dinner"];
 
 export interface ShoppingItem {
   name: string;
@@ -21,21 +24,25 @@ export function buildShoppingList(days: PlannedDay[]): { items: ShoppingItem[]; 
   const seen = new Set<string>(); // each recipe counted once per day it is planned
 
   for (const day of days) {
-    const recipes = Object.values(day.slots).flat();
-    for (const r of recipes) {
-      if (!r.ingredients) { missing.add(r.name); continue; }
-      const key = `${day.date}|${r.recipe_id}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      for (const ing of r.ingredients) {
-        const n = normalise(ing);
-        const k = `${ing.name.toLowerCase()}|${n.unit}`;
-        const existing = map.get(k);
-        if (existing) existing.qty += n.qty;
-        else map.set(k, { name: ing.name, qty: n.qty, unit: n.unit, category: ing.category });
+    for (const slot of SLOTS) {
+      const factor = slotFactor(slot); // lunch is for 4 people, so half of the 8-person recipe
+      for (const r of day.slots[slot] ?? []) {
+        if (!r.ingredients) { missing.add(r.name); continue; }
+        const key = `${day.date}|${slot}|${r.recipe_id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        for (const ing of r.ingredients) {
+          const n = normalise(ing);
+          const k = `${ing.name.toLowerCase()}|${n.unit}`;
+          const existing = map.get(k);
+          if (existing) existing.qty += n.qty * factor;
+          else map.set(k, { name: ing.name, qty: n.qty * factor, unit: n.unit, category: ing.category });
+        }
       }
     }
   }
+  // whole items (eggs, lemons...) are bought in whole pieces
+  for (const item of map.values()) if (item.unit === "piece") item.qty = Math.ceil(item.qty - 1e-9);
   return {
     items: [...map.values()].sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name)),
     recipesWithoutDetails: [...missing],

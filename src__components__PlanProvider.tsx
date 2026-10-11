@@ -6,8 +6,8 @@ import { baselinePlan } from "@/lib/plan-data";
 import { checkDay, repeatConflict } from "@/lib/rules";
 import type { PlannedDay, Recipe, Slot } from "@/lib/types";
 
-const KEY = "family-table-plan-v2";
-const SLOTS: Slot[] = ["breakfast", "morning_tea", "lunch", "afternoon_tea", "dinner"];
+const KEY = "family-table-plan-v3";
+const SLOTS: Slot[] = ["lunch", "dinner"];
 
 export type SwapResult = { ok: true } | { ok: false; message: string };
 

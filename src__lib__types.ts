@@ -8,9 +8,10 @@ export type DishClass =
   | "soup"
   | "snack"
   | "breakfast_item"
+  | "onepot" // quick one-pot meal: rice + protein + vegetables in one pot
   | "staple";
 
-export type Slot = "breakfast" | "morning_tea" | "lunch" | "afternoon_tea" | "dinner";
+export type Slot = "lunch" | "dinner";
 
 export type Category =
   | "Vegetables" | "Fruit" | "Meat" | "Seafood" | "Eggs & dairy" | "Pantry" | "Other";
@@ -33,6 +34,7 @@ export interface Recipe {
   cook_time_minutes: number;
   estimated_cost_sgd: number; // placeholder estimate, not a real price
   is_sample: boolean; // true until a person has checked it
+  treat?: boolean; // deep-fried or rich dish: the planner allows at most 1 per 7 days
   ingredients?: Ingredient[]; // missing = "recipe details coming"
   steps?: string[];
   equipment?: string[];

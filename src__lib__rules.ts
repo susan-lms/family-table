@@ -1,35 +1,31 @@
 import type { PlannedDay, Problem, Recipe, Slot } from "./types";
+import { slotFactor } from "./servings";
 
-const SLOT_NAMES: Slot[] = ["breakfast", "morning_tea", "lunch", "afternoon_tea", "dinner"];
+const SLOT_NAMES: Slot[] = ["lunch", "dinner"];
 
 const count = (items: Recipe[], cls: Recipe["dish_class"]) =>
   items.filter((r) => r.dish_class === cls).length;
 
-/** Check one day against the meal composition rules. */
+/**
+ * Check one day against the meal rules.
+ * Lunch (4 people): 1 protein + 1 vegetable.
+ * Dinner (8 people): a soup every day, plus EITHER 2 protein + 2 vegetable dishes
+ * OR 1 quick one-pot meal (rice with meat/fish and vegetables).
+ */
 export function checkDay(day: PlannedDay): Problem[] {
   const out: Problem[] = [];
   const add = (rule: string, message: string) => out.push({ date: day.date, rule, message });
-
-  for (const s of SLOT_NAMES) {
-    if (!day.slots[s] || day.slots[s].length === 0) add("five-meals", `${s} is empty.`);
-  }
-
-  const b = day.slots.breakfast ?? [];
-  if (b.length !== 2) add("breakfast", `Breakfast needs exactly 2 food items (has ${b.length}).`);
-
-  for (const s of ["morning_tea", "afternoon_tea"] as Slot[]) {
-    const items = day.slots[s] ?? [];
-    if (items.length < 1 || items.length > 2) add("tea-break", `${s} needs 1–2 snack items (has ${items.length}).`);
-    if (items.some((r) => r.dish_class !== "snack")) add("tea-break", `${s} must be finger-food snacks only.`);
-  }
 
   const l = day.slots.lunch ?? [];
   if (l.length !== 2 || count(l, "protein") !== 1 || count(l, "vegetable") !== 1)
     add("lunch", "Lunch needs exactly 1 protein dish and 1 vegetable dish.");
 
   const d = (day.slots.dinner ?? []).filter((r) => r.dish_class !== "staple");
-  if (d.length !== 5 || count(d, "protein") !== 2 || count(d, "vegetable") !== 2 || count(d, "soup") !== 1)
-    add("dinner", "Dinner needs 2 protein dishes, 2 vegetable dishes and 1 soup.");
+  if (count(d, "soup") !== 1) add("dinner-soup", "Dinner needs a soup.");
+  const standard = d.length === 5 && count(d, "protein") === 2 && count(d, "vegetable") === 2 && count(d, "soup") === 1;
+  const quick = d.length === 2 && count(d, "onepot") === 1 && count(d, "soup") === 1;
+  if (!standard && !quick)
+    add("dinner", "Dinner needs a soup plus either 2 protein + 2 vegetable dishes, or 1 quick one-pot meal.");
 
   return out;
 }
@@ -81,18 +77,49 @@ export function repeatConflict(
     const used = SLOT_NAMES.some((s) => (d.slots[s] ?? []).some((r) => r.recipe_id === recipe.recipe_id));
     if (used) return gap === 0 ? "Already on the menu today" : `Used on ${d.date} (too soon, 14-day rule)`;
   }
+  if (recipe.treat) {
+    for (const d of days) {
+      if (Math.abs(dayNumber(d.date) - n) >= TREAT_WINDOW) continue;
+      if (SLOT_NAMES.some((s) => (d.slots[s] ?? []).some((r) => r.treat)))
+        return `Another treat (deep-fried) dish is on ${d.date}. Only 1 treat in any 7 days.`;
+    }
+  }
   return null;
 }
 
-export function validatePlan(days: PlannedDay[]): Problem[] {
-  return [...days.flatMap(checkDay), ...checkNoRepeat(days)];
+const TREAT_WINDOW = 7;
+
+/** At most 1 treat (deep-fried) dish in any 7 days. */
+export function checkTreats(days: PlannedDay[]): Problem[] {
+  const out: Problem[] = [];
+  const treatDays = days
+    .map((d) => ({ date: d.date, n: dayNumber(d.date), count: SLOT_NAMES.flatMap((s) => d.slots[s] ?? []).filter((r) => r.treat).length }))
+    .filter((d) => d.count > 0);
+  for (let k = 0; k < treatDays.length; k++) {
+    if (treatDays[k].count > 1)
+      out.push({ date: treatDays[k].date, rule: "treat", message: `More than one treat dish on ${treatDays[k].date}.` });
+    if (k > 0 && treatDays[k].n - treatDays[k - 1].n < TREAT_WINDOW)
+      out.push({ date: treatDays[k].date, rule: "treat", message: `Treat dishes on ${treatDays[k - 1].date} and ${treatDays[k].date} are too close. Only 1 treat in any 7 days.` });
+  }
+  return out;
 }
+
+export function validatePlan(days: PlannedDay[]): Problem[] {
+  return [...days.flatMap(checkDay), ...checkNoRepeat(days), ...checkTreats(days)];
+}
+
+/** Cost of one meal for the number of people it is cooked for. */
+export const slotCost = (day: PlannedDay, slot: Slot) =>
+  (day.slots[slot] ?? []).reduce((sum, r) => sum + r.estimated_cost_sgd, 0) * slotFactor(slot);
 
 /** Daily cost estimate (rough estimates from prices.ts). */
 export const dayCost = (day: PlannedDay) =>
-  SLOT_NAMES.flatMap((s) => day.slots[s] ?? []).reduce((sum, r) => sum + r.estimated_cost_sgd, 0);
+  SLOT_NAMES.reduce(
+    (total, slot) => total + (day.slots[slot] ?? []).reduce((sum, r) => sum + r.estimated_cost_sgd, 0) * slotFactor(slot),
+    0,
+  );
 
-export function budgetWarning(day: PlannedDay, min = 60, max = 70): string | null {
+export function budgetWarning(day: PlannedDay, min = 0, max = 80): string | null {
   const c = dayCost(day);
   if (c > max) return `Estimated S$${c.toFixed(2)} is over the S$${max} target.`;
   if (c < min) return `Estimated S$${c.toFixed(2)} is under the S$${min} target — check nothing is missing.`;
