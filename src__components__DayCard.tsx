@@ -27,7 +27,7 @@ export default function DayCard({ date }: { date: string }) {
     <section className="rounded-2xl border border-stone-300 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-2xl font-bold">{prettyDate(day.date)}</h2>
-        <p className="text-lg">Estimated cost: <strong>S${dayCost(day).toFixed(2)}</strong> <span className="text-stone-500">(sample)</span></p>
+        <p className="text-lg">Estimated cost: <strong>S${dayCost(day).toFixed(2)}</strong> <span className="text-stone-500">(estimate, about S${(dayCost(day) / 8).toFixed(2)} per person)</span></p>
       </div>
 
       <p className={`mt-2 rounded-lg px-3 py-2 text-base font-medium ${problems.length ? "bg-red-100 text-red-900" : "bg-emerald-100 text-emerald-900"}`}>

@@ -64,7 +64,7 @@ export default function SwapDialog({ date, allDays, current, message, onPick, on
                 >
                   <span className="block text-lg font-semibold">{r.name}</span>
                   <span className="block text-base">
-                    {r.cuisine} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min · S${r.estimated_cost_sgd.toFixed(2)} (sample)
+                    {r.cuisine} · Prep {r.prep_time_minutes} min · Cook {r.cook_time_minutes} min · S${r.estimated_cost_sgd.toFixed(2)} (estimate)
                   </span>
                   {conflict ? (
                     <span className="block text-base font-medium text-red-700">Not available: {conflict}</span>

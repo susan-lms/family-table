@@ -88,11 +88,11 @@ export function validatePlan(days: PlannedDay[]): Problem[] {
   return [...days.flatMap(checkDay), ...checkNoRepeat(days)];
 }
 
-/** Daily cost estimate (sample data only until prices are verified). */
+/** Daily cost estimate (rough estimates from prices.ts). */
 export const dayCost = (day: PlannedDay) =>
   SLOT_NAMES.flatMap((s) => day.slots[s] ?? []).reduce((sum, r) => sum + r.estimated_cost_sgd, 0);
 
-export function budgetWarning(day: PlannedDay, min = 25, max = 40): string | null {
+export function budgetWarning(day: PlannedDay, min = 60, max = 70): string | null {
   const c = dayCost(day);
   if (c > max) return `Estimated S$${c.toFixed(2)} is over the S$${max} target.`;
   if (c < min) return `Estimated S$${c.toFixed(2)} is under the S$${min} target — check nothing is missing.`;

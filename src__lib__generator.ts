@@ -75,7 +75,7 @@ export interface GenOptions {
   days: number;
   library: Recipe[];
   windowDays?: number; // default 14
-  budget?: { min: number; max: number }; // default S$25-40
+  budget?: { min: number; max: number }; // default S$60-70
 }
 
 export interface GenResult {
@@ -91,9 +91,12 @@ export interface GenResult {
  * Builds days one by one. A dish is only chosen if it has not been used in the last
  * (windowDays - 1) days. If no valid dish exists, it stops and says why. It never breaks a rule.
  */
+/** How strongly cheaper dishes are preferred. 0 = ignore cost. Never overrides the 14-day rule. */
+const COST_WEIGHT = 8;
+
 export function generatePlan(opts: GenOptions): GenResult {
   const windowDays = opts.windowDays ?? 14;
-  const budget = opts.budget ?? { min: 25, max: 40 };
+  const budget = opts.budget ?? { min: 60, max: 70 };
   const lastUsed = new Map<string, number>();
   const cuisineTotal = new Map<string, number>();
   const days: PlannedDay[] = [];
@@ -121,7 +124,7 @@ export function generatePlan(opts: GenOptions): GenResult {
           const last = lastUsed.get(r.recipe_id);
           const gap = last === undefined ? 1000 : i - last; // never used / longest ago first
           const sameCuisineNow = chosen.filter((c) => c.cuisine === r.cuisine).length;
-          return sameCuisineNow * 1000 + (cuisineTotal.get(r.cuisine) ?? 0) * 10 - gap + (hash(r.recipe_id + i) % 7);
+          return sameCuisineNow * 1000 + (cuisineTotal.get(r.cuisine) ?? 0) * 10 - gap + (hash(r.recipe_id + i) % 7) + r.estimated_cost_sgd * COST_WEIGHT;
         };
         eligible.sort((a, b) => score(a) - score(b) || a.recipe_id.localeCompare(b.recipe_id));
         chosen.push(eligible[0]);

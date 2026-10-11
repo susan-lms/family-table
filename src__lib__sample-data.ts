@@ -2,6 +2,9 @@ import type { Cuisine, DishClass, PlannedDay, Recipe } from "./types";
 import { batch1 } from "./recipes-batch1";
 import { batch2a } from "./recipes-batch2a";
 import { batch2b } from "./recipes-batch2b";
+import { batch4 } from "./recipes-batch4";
+import { batch3all } from "./recipes-batch3";
+import { estimateRecipeCost } from "./prices";
 
 /**
  * SAMPLE DATA ONLY. Written for this prototype, not yet taste-tested.
@@ -222,18 +225,41 @@ export const alternatives: Recipe[] = [
   ...batch1,
   ...batch2a,
   ...batch2b,
+  ...batch4,
 ];
 
-/** Every dish the app knows about (the days above plus the swap choices), each once. */
+/**
+ * Healthy portion: each protein dish is one of 3 per day, so the meat or fish in it is
+ * cut to 60% of a "single main dish" amount (about 110 g raw per person per dish).
+ */
+const MEAT_FACTOR = 0.6;
+const portion = (r: Recipe): Recipe => {
+  if (r.dish_class !== "protein" || !r.ingredients) return r;
+  return {
+    ...r,
+    ingredients: r.ingredients.map((g) => {
+      if (g.category !== "Meat" && g.category !== "Seafood") return g;
+      const qty = g.unit === "kg" ? Math.round(g.qty * MEAT_FACTOR * 20) / 20 : Math.max(50, Math.round((g.qty * MEAT_FACTOR) / 50) * 50);
+      return { ...g, qty };
+    }),
+  };
+};
+
+/** Every dish the app knows about (the days above plus the swap choices), each once. Costs are ROUGH ESTIMATES from prices.ts. */
 export const library: Recipe[] = (() => {
   const seen = new Set<string>();
   const out: Recipe[] = [];
   const all = [
+    ...batch3all,
     ...sampleDays.flatMap((d) => SLOT_ORDER.flatMap((s) => d.slots[s])),
     ...alternatives,
   ];
-  for (const r of all) {
-    if (!seen.has(r.recipe_id)) { seen.add(r.recipe_id); out.push(r); }
+  for (const r0 of all) {
+    if (seen.has(r0.recipe_id)) continue;
+    seen.add(r0.recipe_id);
+    const r = portion(r0);
+    const cost = estimateRecipeCost(r);
+    out.push(cost === undefined ? r : { ...r, estimated_cost_sgd: cost });
   }
   return out;
 })();

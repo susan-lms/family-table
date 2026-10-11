@@ -83,7 +83,7 @@ test("new cuisines exist in the real library", () => {
 
 test("every recipe with steps has at least 3 ingredients, 3 steps and a note", () => {
   const full = realLibrary.filter((r) => r.steps);
-  assert.ok(full.length >= 110);
+  assert.equal(full.length, realLibrary.length); // no "steps coming soon" dishes left
   for (const r of full) {
     assert.ok(r.ingredients && r.ingredients.length >= 2, r.name + " ingredients");
     assert.ok(r.steps && r.steps.length >= 3, r.name + " steps");
@@ -98,6 +98,17 @@ test("every batch-1 recipe has ingredients, steps, and units that the shopping l
     assert.ok(r.ingredients && r.ingredients.length >= 3, r.name + " ingredients");
     assert.ok(r.steps && r.steps.length >= 4, r.name + " steps");
     assert.ok(r.oil_salt_sugar_note, r.name + " note");
+  }
+});
+
+test("every dish has a cost estimate from its ingredients, and protein portions are not oversized", () => {
+  for (const r of realLibrary) {
+    assert.ok(r.estimated_cost_sgd > 0 && r.estimated_cost_sgd < 40, r.name + " cost " + r.estimated_cost_sgd);
+    if (r.dish_class === "protein") {
+      const meatG = (r.ingredients ?? []).filter((g) => g.category === "Meat" || g.category === "Seafood")
+        .reduce((sum, g) => sum + (g.unit === "kg" ? g.qty * 1000 : g.qty), 0);
+      assert.ok(meatG <= 1200, r.name + " meat " + meatG + " g");
+    }
   }
 });
 
