@@ -67,6 +67,23 @@ export function checkNoRepeat(days: PlannedDay[], windowDays = 14): Problem[] {
 }
 
 /** Run every hard rule. Plan may only be saved when this returns an empty list. */
+/**
+ * Can this recipe go on this date? Looks 13 days back and 13 days ahead.
+ * Returns a plain-English reason if not, or null if it is allowed.
+ */
+export function repeatConflict(
+  days: PlannedDay[], date: string, recipe: Recipe, windowDays = 14,
+): string | null {
+  const n = dayNumber(date);
+  for (const d of days) {
+    const gap = Math.abs(dayNumber(d.date) - n);
+    if (gap >= windowDays) continue;
+    const used = SLOT_NAMES.some((s) => (d.slots[s] ?? []).some((r) => r.recipe_id === recipe.recipe_id));
+    if (used) return gap === 0 ? "Already on the menu today" : `Used on ${d.date} (too soon, 14-day rule)`;
+  }
+  return null;
+}
+
 export function validatePlan(days: PlannedDay[]): Problem[] {
   return [...days.flatMap(checkDay), ...checkNoRepeat(days)];
 }

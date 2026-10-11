@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Nav from "@/components/Nav";
+import { PlanProvider } from "@/components/PlanProvider";
 import "./globals.css";
 
 export const metadata: Metadata = { title: "Family Table", description: "Family meal planner for 8" };
@@ -10,7 +11,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-screen pb-24 md:pb-0">
         <Nav />
-        <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+        <PlanProvider>
+          <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+        </PlanProvider>
       </body>
     </html>
   );

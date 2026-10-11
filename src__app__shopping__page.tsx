@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { buildShoppingList, formatQty } from "@/lib/shopping";
 import { sampleDays } from "@/lib/sample-data";
+import { usePlan } from "@/components/PlanProvider";
 
 export default function Shopping() {
+  const { days: planDays } = usePlan();
   const [selected, setSelected] = useState<string[]>(sampleDays.map((d) => d.date));
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-  const days = sampleDays.filter((d) => selected.includes(d.date));
+  const days = planDays.filter((d) => selected.includes(d.date));
   const { items, recipesWithoutDetails } = buildShoppingList(days);
   const categories = [...new Set(items.map((i) => i.category))];
 

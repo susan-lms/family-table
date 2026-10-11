@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { checkDay, checkNoRepeat, validatePlan } from "./rules";
+import { checkDay, checkNoRepeat, repeatConflict, validatePlan } from "./rules";
 import type { DishClass, PlannedDay, Recipe } from "./types";
 
 let n = 0;
@@ -81,6 +81,20 @@ test("same recipe twice in one day is blocked", () => {
 
 test("validatePlan combines all rules", () => {
   assert.equal(validatePlan([goodDay("2026-10-12", "x"), goodDay("2026-10-13", "y")]).length, 0);
+});
+
+test("swap check: same recipe 13 days away is blocked, 14 days away is allowed, same day blocked", () => {
+  const a = goodDay("2026-10-12", "x");
+  const cand = a.slots.lunch[0];
+  assert.ok(repeatConflict([a], "2026-10-25", cand)); // 13 days later
+  assert.equal(repeatConflict([a], "2026-10-26", cand), null); // 14 days later
+  assert.ok(repeatConflict([a], "2026-09-29", cand)); // 13 days earlier
+  assert.ok(repeatConflict([a], "2026-10-12", cand)); // same day
+});
+
+test("swap check: a recipe not used anywhere is allowed", () => {
+  const a = goodDay("2026-10-12", "x");
+  assert.equal(repeatConflict([a], "2026-10-13", r("protein", "brand-new")), null);
 });
 
 console.log(`\n${passed} tests passed`);
