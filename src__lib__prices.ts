@@ -11,6 +11,7 @@ interface Rule { re: RegExp; kg?: number; l?: number; each?: number; tsp?: numbe
 
 export const PRICE_RULES: Rule[] = [
   // recipe-book additions (rough guesses, like the rest)
+  { re: /curry paste/i, l: 12 }, { re: /duck/i, kg: 9 }, { re: /pineapple/i, each: 0.6, kg: 2.5 }, { re: /pearl barley/i, kg: 3 }, { re: /wholemeal pasta/i, kg: 4 }, { re: /fermented bean curd/i, each: 0.3 }, { re: /sour plums/i, each: 0.2 }, { re: /lily buds|codonopsis/i, kg: 60 }, { re: /beef chuck/i, kg: 20 }, { re: /honey/i, kg: 14 }, { re: /cloves/i, each: 0.05 },
   { re: /lamb chops/i, kg: 40 }, { re: /lamb/i, kg: 28 }, { re: /pomfret/i, kg: 25 }, { re: /oyster/i, kg: 25 }, { re: /clams/i, kg: 12 },
   { re: /fish balls/i, kg: 9 }, { re: /dried shrimp/i, kg: 60 }, { re: /dried squid/i, kg: 70 },
   { re: /grated cheese/i, kg: 14 }, { re: /puff pastry sheet/i, each: 1.2 }, { re: /avocado/i, each: 2 }, { re: /popiah skin/i, each: 0.3 },

@@ -14,6 +14,10 @@ interface Rule { re: RegExp; tbsp?: number; tsp?: number; per100?: number; each?
 const RULES: Rule[] = [
   // recipe-book additions. ASSUMPTIONS (not verified): salty preserved foods are counted after rinsing, so about half of their raw saltiness.
   { re: /grated cheese/i, per100: 600 },
+  { re: /curry paste/i, tbsp: 500 }, // assumption: ready-made paste is salty
+  { re: /fermented bean curd/i, each: 300 }, // assumption: one cube, mashed into the dish
+  { re: /pickled sour plums/i, each: 250 }, // assumption
+  { re: /wholemeal breadcrumbs/i, per100: 500 }, // assumption
   { re: /salted egg/i, each: 400 }, // yolk only
   { re: /preserved radish|chai poh/i, per100: 1500 },
   { re: /salted mustard|preserved mustard/i, per100: 1500 },

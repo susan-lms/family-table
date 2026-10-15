@@ -4,6 +4,13 @@ import { mainProtein, type ProteinType } from "./protein";
 /** Helpers for the recipe book: cuisine tiles, dish-type chips and the 30-minute check. */
 export const totalMinutes = (r: Recipe): number => r.prep_time_minutes + r.cook_time_minutes;
 export const QUICK_MINUTES = 30;
+/** 25 -> "25 min", 80 -> "1 h 20 min". */
+export const fmtMinutes = (m: number): string => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ""}`);
+export const TIME_OPTIONS = [
+  { id: "any", label: "Any time", max: Infinity },
+  { id: "30", label: "30 min or less ⏱", max: 30 },
+  { id: "60", label: "1 hour or less", max: 60 },
+] as const;
 
 export interface Facet { id: string; label: string; zh: string; emoji: string; test: (r: Recipe) => boolean }
 

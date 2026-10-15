@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { HeartButton } from "@/components/FavouritesProvider";
 import { recipeSodium } from "@/lib/sodium";
+import { emojiOf, fmtMinutes } from "@/lib/browse";
+import { RecipePhoto } from "@/components/PhotosProvider";
 import { SENIOR_TIP, isSoft } from "@/lib/softness";
 import { LEFTOVER_TIP, isCalciumRich, keepsWell } from "@/lib/nutrition";
 import { ingredientZh } from "@/lib/zh-ingredients";
@@ -24,9 +26,10 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
       <button onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))} className="text-lg font-semibold text-emerald-800 underline">← Back</button>
       <h1 className="text-3xl font-bold">{recipe.name}</h1>
       {recipe.name_zh && <p className="text-2xl font-semibold text-stone-700">{recipe.name_zh}</p>}
+      <RecipePhoto id={recipe.recipe_id} name={recipe.name} emoji={emojiOf(recipe)} />
       {isSoft(recipe) && <p className="text-lg"><span className="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-900">Soft</span> Easy to chew for the seniors.</p>}
       <p className="flex flex-wrap items-center gap-2 text-lg">
-        <span className={`rounded-full px-3 py-1 font-semibold ${recipe.prep_time_minutes + recipe.cook_time_minutes <= 30 ? "bg-emerald-100 text-emerald-900" : "bg-stone-200"}`}>⏱ {recipe.prep_time_minutes + recipe.cook_time_minutes} min in all</span>
+        <span className={`rounded-full px-3 py-1 font-semibold ${recipe.prep_time_minutes + recipe.cook_time_minutes <= 30 ? "bg-emerald-100 text-emerald-900" : "bg-stone-200"}`}>⏱ {fmtMinutes(recipe.prep_time_minutes + recipe.cook_time_minutes)} in all</span>
         <span>Prep {recipe.prep_time_minutes} min · Cook {recipe.cook_time_minutes} min · For {servings} people</span>
       </p>
       <p className="text-base text-stone-700">
@@ -60,7 +63,7 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
           A complete {recipe.meal === "porridge" ? "porridge" : recipe.meal === "noodles" ? "noodle" : recipe.meal === "sandwich" ? "sandwich" : "one-dish"} meal with protein and vegetables. No other dishes needed. At dinner, serve with a soup.
         </p>
       )}
-      <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested.</p>
+      <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested. Recipe number: {recipe.recipe_id}</p>
 
       {recipe.food_safety && (
         <p className="rounded-lg border-2 border-red-300 bg-red-50 px-4 py-3 text-lg font-medium text-red-900">

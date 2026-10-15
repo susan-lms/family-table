@@ -7,7 +7,8 @@ import { useFavourites } from "@/components/FavouritesProvider";
 import { findRecipe } from "@/lib/sample-data";
 import { buildRecipeShoppingList, formatQty } from "@/lib/shopping";
 import { ingredientZh } from "@/lib/zh-ingredients";
-import { emojiOf, totalMinutes } from "@/lib/browse";
+import { emojiOf, fmtMinutes, totalMinutes } from "@/lib/browse";
+import { Thumb } from "@/components/PhotosProvider";
 import type { Recipe } from "@/lib/types";
 
 const SIZES = [2, 4, 6, 8];
@@ -35,11 +36,11 @@ export default function Saved() {
             {entries.map(({ recipe: r, servings }) => (
               <li key={r.recipe_id} className="rounded-2xl border border-stone-300 bg-white p-4">
                 <Link href={`/cook/${r.recipe_id}?for=${servings}`} className="flex items-center gap-3">
-                  <span className="text-3xl" aria-hidden>{emojiOf(r)}</span>
+                  <Thumb id={r.recipe_id} emoji={emojiOf(r)} size={64} />
                   <span className="flex-1">
                     <span className="block text-xl font-bold">{r.name}</span>
                     {r.name_zh && <span className="block text-lg text-stone-700">{r.name_zh}</span>}
-                    <span className="text-base text-stone-600">⏱ {totalMinutes(r)} min</span>
+                    <span className="text-base text-stone-600">⏱ {fmtMinutes(totalMinutes(r))}</span>
                   </span>
                 </Link>
                 <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label={`People for ${r.name}`}>

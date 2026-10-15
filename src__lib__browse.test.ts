@@ -8,8 +8,9 @@ import { validatePlan } from "./rules";
 let n = 0;
 const ok = (c: boolean, m: string) => { if (!c) { console.error("FAIL -", m); process.exit(1); } n++; console.log("ok -", m); };
 
-ok(browseRecipes.length >= 80, `recipe book has ${browseRecipes.length} new dishes`);
-ok(browseRecipes.every((r) => totalMinutes(r) <= 30), "every new recipe takes 30 minutes or less");
+ok(browseRecipes.length >= 180, `recipe book has ${browseRecipes.length} new dishes`);
+ok(browseRecipes.every((r) => totalMinutes(r) <= 120), "every new recipe takes 2 hours or less");
+ok(browseRecipes.filter((r) => totalMinutes(r) <= 30).length >= 80, "at least 80 new recipes are still 30 minutes or less");
 ok(browseRecipes.every((r) => r.browse && !!r.name_zh && (r.steps?.length ?? 0) >= 3 && (r.ingredients?.length ?? 0) >= 3), "every new recipe is browse-only, has a Chinese name, steps and ingredients");
 ok(browseRecipes.every((r) => r.ingredients!.every((g) => g.qty > 0)), "all ingredient amounts are positive");
 ok(new Set(catalog.map((r) => r.recipe_id)).size === catalog.length, "no duplicate recipe ids in the catalog");
@@ -24,7 +25,8 @@ const countType = (id: string) => catalog.filter((r) => TYPES.find((t) => t.id =
 for (const t of TYPES) ok(countType(t.id) >= 5, `type "${t.label}" has ${countType(t.id)} quick recipes`);
 const meats = ["chicken", "pork", "beef", "lamb"];
 for (const m of meats) ok(catalog.some((r) => TYPES[1].test(r) && mainProtein(r) === m && totalMinutes(r) <= 30), `quick ${m} dish exists`);
-ok(browseRecipes.filter((r) => r.dish_class === "pie" && r.sweet).length === 5 && browseRecipes.filter((r) => r.dish_class === "pie" && !r.sweet).length === 5, "5 savoury and 5 sweet pies");
+ok(browseRecipes.filter((r) => r.dish_class === "pie" && r.sweet).length >= 7 && browseRecipes.filter((r) => r.dish_class === "pie" && !r.sweet).length >= 7, "at least 7 savoury and 7 sweet pies");
+for (const g of ["Cantonese", "Teochew", "Hokkien", "Hakka"] as const) ok(browseRecipes.filter((r) => r.region === g).length >= 28, `${g} has ${browseRecipes.filter((r) => r.region === g).length} dishes and soups`);
 ok((["Cantonese", "Teochew", "Hokkien", "Hakka"] as const).every((g) => browseRecipes.filter((r) => r.region === g && r.dish_class === "soup").length >= 2 && browseRecipes.filter((r) => r.region === g && r.dish_class !== "soup").length >= 6), "each Chinese region has 6+ dishes and 2+ soups");
 ok(findRecipe("R-LB-001")?.name === "Cumin lamb stir-fry" && !!findRecipe("R-CN-001"), "findRecipe finds recipe-book and planner dishes");
 const heavy = browseRecipes.filter((r) => recipeSodium(r) / 8 > 800);

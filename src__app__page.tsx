@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { catalog, EXCLUDED_CUISINES } from "@/lib/sample-data";
-import { CUISINES, MEAT_CHIPS, TYPES, emojiOf, originOf, totalMinutes, QUICK_MINUTES } from "@/lib/browse";
+import { CUISINES, MEAT_CHIPS, TIME_OPTIONS, TYPES, emojiOf, fmtMinutes, originOf, totalMinutes } from "@/lib/browse";
 import { mainProtein } from "@/lib/protein";
 import { isSoft } from "@/lib/softness";
 import { HeartButton } from "@/components/FavouritesProvider";
+import { Thumb } from "@/components/PhotosProvider";
 
 const PAGE = 24;
 
@@ -18,7 +19,7 @@ export default function RecipeBook() {
   const [type, setType] = useState("all");
   const [meat, setMeat] = useState("all");
   const [pieKind, setPieKind] = useState("all");
-  const [quick, setQuick] = useState(true);
+  const [time, setTime] = useState<(typeof TIME_OPTIONS)[number]["id"]>("any");
   const [softOnly, setSoftOnly] = useState(false);
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(PAGE);
@@ -26,6 +27,7 @@ export default function RecipeBook() {
   const pool = useMemo(() => catalog.filter((r) => !EXCLUDED_CUISINES.includes(r.cuisine)), []);
   const cuisineTest = CUISINES.find((c) => c.id === cuisine)!.test;
   const typeTest = TYPES.find((t) => t.id === type)!.test;
+  const maxMin = TIME_OPTIONS.find((t) => t.id === time)!.max;
   const needle = q.trim().toLowerCase();
 
   const shown = useMemo(
@@ -37,12 +39,12 @@ export default function RecipeBook() {
             typeTest(r) &&
             (type !== "meat" || meat === "all" || mainProtein(r) === meat) &&
             (type !== "pie" || pieKind === "all" || (pieKind === "sweet") === !!r.sweet) &&
-            (!quick || totalMinutes(r) <= QUICK_MINUTES) &&
+            totalMinutes(r) <= maxMin &&
             (!softOnly || isSoft(r)) &&
             (needle === "" || r.name.toLowerCase().includes(needle) || (r.name_zh ?? "").includes(q.trim())),
         )
         .sort((a, b) => totalMinutes(a) - totalMinutes(b) || a.name.localeCompare(b.name)),
-    [pool, cuisineTest, typeTest, type, meat, pieKind, quick, softOnly, needle, q],
+    [pool, cuisineTest, typeTest, type, meat, pieKind, maxMin, softOnly, needle, q],
   );
 
   const reset = () => setLimit(PAGE);
@@ -107,10 +109,10 @@ export default function RecipeBook() {
       </section>
 
       <section className="flex flex-wrap items-center gap-3" aria-label="Filters">
-        <label className="flex cursor-pointer items-center gap-2 text-lg">
-          <input type="checkbox" className="h-6 w-6" checked={quick} onChange={(e) => { setQuick(e.target.checked); reset(); }} />
-          30 minutes or less ⏱
-        </label>
+        <span className="text-lg font-semibold">Cooking time:</span>
+        {TIME_OPTIONS.map((t) => (
+          <button key={t.id} onClick={() => { setTime(t.id); reset(); }} aria-pressed={time === t.id} className={chip(time === t.id)}>{t.label}</button>
+        ))}
         <label className="flex cursor-pointer items-center gap-2 text-lg">
           <input type="checkbox" className="h-6 w-6" checked={softOnly} onChange={(e) => { setSoftOnly(e.target.checked); reset(); }} />
           Soft for seniors
@@ -121,7 +123,7 @@ export default function RecipeBook() {
 
       {shown.length === 0 && (
         <p className="rounded-xl bg-amber-100 px-4 py-3 text-lg text-amber-900">
-          No recipes match. Try another cuisine, or untick “30 minutes or less”.
+          No recipes match. Try another cuisine or type of dish, or choose “Any time”.
         </p>
       )}
 
@@ -129,12 +131,12 @@ export default function RecipeBook() {
         {shown.slice(0, limit).map((r) => (
           <li key={r.recipe_id}>
             <Link href={`/cook/${r.recipe_id}?for=4`} className="flex items-start gap-3 rounded-2xl border border-stone-300 bg-white p-4 shadow-sm">
-              <span className="text-4xl" aria-hidden>{emojiOf(r)}</span>
+              <Thumb id={r.recipe_id} emoji={emojiOf(r)} />
               <span className="min-w-0 flex-1">
                 <span className="block text-xl font-bold leading-snug">{r.name}</span>
                 {r.name_zh && <span className="block text-lg text-stone-700">{r.name_zh}</span>}
                 <span className="mt-1 flex flex-wrap gap-2 text-base">
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-900">⏱ {totalMinutes(r)} min</span>
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-900">⏱ {fmtMinutes(totalMinutes(r))}</span>
                   <span className="rounded-full bg-stone-100 px-3 py-1">{originOf(r)}</span>
                   {r.dish_class !== "soup" && r.dish_class !== "vegetable" && r.dish_class !== "pie" && r.dish_class !== "salad" && <span className="rounded-full bg-stone-100 px-3 py-1">{mainProtein(r)}</span>}
                   {r.sweet && <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-900">sweet</span>}
