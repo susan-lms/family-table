@@ -11,7 +11,7 @@ export default function Home() {
   const date = inPlan ? today : today < PLAN_START ? PLAN_START : last;
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">{inPlan ? "Today's menu" : "Menu"}</h1>
+      <h1 className="text-3xl font-bold text-emerald-700">{inPlan ? "Today's menu" : "Menu"}</h1>
       {!inPlan && (
         <p className="rounded-lg bg-amber-100 px-3 py-2 text-base text-amber-900">
           {today < PLAN_START ? "Your 90-day plan starts on 12 October 2026. Here is day 1." : "The 90-day plan has ended. Here is the last day."}

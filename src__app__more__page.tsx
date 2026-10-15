@@ -9,15 +9,17 @@ const items = [
   { href: "/settings", title: "Weekly pattern 每周安排", text: "Choose quick one-pot nights, porridge/noodle lunches, noodle dinners and the meat-free day." },
 ];
 
+const EDGES = ["border-l-orange-500", "border-l-emerald-500", "border-l-sky-500", "border-l-rose-500", "border-l-violet-500", "border-l-amber-500"];
+
 export default function More() {
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">More</h1>
+      <h1 className="text-3xl font-bold text-violet-600">✨ More</h1>
       <ul className="space-y-3">
-        {items.map((it) => (
+        {items.map((it, n) => (
           <li key={it.href}>
-            <Link href={it.href} className="block rounded-2xl border border-stone-300 bg-white p-5 shadow-sm">
-              <span className="block text-2xl font-bold text-emerald-800">{it.title}</span>
+            <Link href={it.href} className={`block rounded-2xl border border-l-8 border-stone-200 bg-white p-5 shadow-sm ${EDGES[n % EDGES.length]}`}>
+              <span className="block text-2xl font-bold text-stone-900">{it.title}</span>
               <span className="mt-1 block text-lg">{it.text}</span>
             </Link>
           </li>

@@ -102,7 +102,7 @@ export default function DayCard({ date }: { date: string }) {
                     </span>
                     {isSoft(r) && <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-sm font-semibold text-sky-900">Soft</span>}
                     {r.treat && <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-sm font-semibold text-orange-900">Treat</span>}
-                    {r.dish_class === "onedish" && <span className="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-sm font-semibold text-indigo-900">{r.meal === "porridge" ? "Porridge" : r.meal === "noodles" ? "Noodles" : "Sandwich"}</span>}
+                    {r.dish_class === "onedish" && <span className="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-sm font-semibold text-indigo-900">{r.meal === "porridge" ? "Porridge" : r.meal === "noodles" ? "Noodles" : r.meal === "sandwich" ? "Sandwich" : "One dish"}</span>}
                     {r.dish_class === "onepot" && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-sm font-semibold text-emerald-900">One pot</span>}
                   </span>
                   <span className="no-print flex items-center gap-2">

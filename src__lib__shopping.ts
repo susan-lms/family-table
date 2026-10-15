@@ -82,3 +82,14 @@ export function buildRecipeShoppingList(entries: Array<{ recipe: Recipe; serving
   for (const item of map.values()) if (item.unit === "piece") item.qty = Math.ceil(item.qty - 1e-9);
   return [...map.values()].sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
 }
+
+/** Add two shopping lists together (same name and unit are summed). */
+export function mergeShoppingLists(a: ShoppingItem[], b: ShoppingItem[]): ShoppingItem[] {
+  const map = new Map<string, ShoppingItem>();
+  for (const item of [...a, ...b]) {
+    const k = `${item.name.toLowerCase()}|${item.unit}`;
+    const existing = map.get(k);
+    if (existing) existing.qty += item.qty; else map.set(k, { ...item });
+  }
+  return [...map.values()].sort((x, y) => x.category.localeCompare(y.category) || x.name.localeCompare(y.name));
+}

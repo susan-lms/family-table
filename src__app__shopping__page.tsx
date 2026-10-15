@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PrintButton from "@/components/PrintButton";
 import Link from "next/link";
-import { buildShoppingList, formatQty } from "@/lib/shopping";
+import { buildRecipeShoppingList, buildShoppingList, formatQty, mergeShoppingLists } from "@/lib/shopping";
+import { findRecipe } from "@/lib/sample-data";
+import { useExtras } from "@/components/ExtrasProvider";
+import type { Recipe } from "@/lib/types";
 import { ingredientZh } from "@/lib/zh-ingredients";
 import { todaySG } from "@/lib/plan-data";
 import { usePlan } from "@/components/PlanProvider";
@@ -15,23 +18,45 @@ export default function Shopping() {
   const [from, setFrom] = useState(todayIdx);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-  const days = planDays.slice(from, from + count);
-  const { items, recipesWithoutDetails } = buildShoppingList(days);
+  // dates chosen on the Meal plan calendar arrive as ?from=...&to=...
+  const [range, setRange] = useState<{ from: string; to: string } | null>(null);
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const f = p.get("from"), t = p.get("to");
+    if (f && t && /^\d{4}-\d{2}-\d{2}$/.test(f) && /^\d{4}-\d{2}-\d{2}$/.test(t)) setRange({ from: f, to: t });
+  }, []);
+
+  const days = range ? planDays.filter((d) => d.date >= range.from && d.date <= range.to) : planDays.slice(from, from + count);
+  const { extras } = useExtras();
+  const dates = new Set(days.map((d) => d.date));
+  const added = extras
+    .filter((x) => dates.has(x.date))
+    .map((x) => ({ recipe: findRecipe(x.recipeId), servings: x.servings }))
+    .filter((x): x is { recipe: Recipe; servings: number } => !!x.recipe);
+  const planList = buildShoppingList(days);
+  const items = mergeShoppingLists(planList.items, buildRecipeShoppingList(added));
+  const recipesWithoutDetails = planList.recipesWithoutDetails;
   const categories = [...new Set(items.map((i) => i.category))];
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">Shopping list 购物清单</h1>
+      <h1 className="text-3xl font-bold text-orange-600">🛒 Shopping list 购物清单</h1>
       <PrintButton />
-      <p className="text-lg">Quantities are for 8 people. How many days do you want to shop for?</p>
-      <div className="no-print flex flex-wrap gap-2">
+      {range && (
+        <p className="rounded-xl bg-emerald-100 px-4 py-3 text-lg font-semibold text-emerald-900">
+          Dates chosen on the calendar: {range.from} to {range.to}{" "}
+          <button className="ml-2 rounded-full bg-white px-3 py-1 text-base underline" onClick={() => setRange(null)}>Choose by number of days instead</button>
+        </p>
+      )}
+      <p className="text-lg">{added.length > 0 ? `Includes ${added.length} recipe${added.length === 1 ? "" : "s"} you added to these dates. ` : ""}Plan dishes are for 8 people (lunch for 4). {range ? "" : "How many days do you want to shop for?"}</p>
+      <div className={`no-print flex flex-wrap gap-2 ${range ? "hidden" : ""}`}>
         {[1, 3, 7, 14].map((n) => (
           <button key={n} onClick={() => setCount(n)} className={`rounded-full px-5 py-3 text-lg font-semibold ${count === n ? "bg-emerald-700 text-white" : "bg-stone-200"}`}>
             {n === 1 ? "1 day" : `${n} days`}
           </button>
         ))}
       </div>
-      {days.length > 0 && (
+      {!range && days.length > 0 && (
         <div className="no-print flex items-center justify-between gap-3">
           <button className="rounded-xl bg-stone-200 px-4 py-3 text-lg font-semibold disabled:opacity-40" disabled={from === 0} onClick={() => setFrom(Math.max(0, from - count))}>← Earlier</button>
           <p className="text-center text-lg font-semibold">{days[0].date} to {days[days.length - 1].date}</p>

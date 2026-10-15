@@ -6,6 +6,9 @@ import { HeartButton } from "@/components/FavouritesProvider";
 import { recipeSodium } from "@/lib/sodium";
 import { emojiOf, fmtMinutes } from "@/lib/browse";
 import { RecipePhoto } from "@/components/PhotosProvider";
+import AddToPlan from "@/components/AddToPlan";
+import { CUISINE_TONE } from "@/lib/theme";
+import { cuisineIdOf, originOf } from "@/lib/browse";
 import { SENIOR_TIP, isSoft } from "@/lib/softness";
 import { LEFTOVER_TIP, isCalciumRich, keepsWell } from "@/lib/nutrition";
 import { ingredientZh } from "@/lib/zh-ingredients";
@@ -24,6 +27,7 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
   return (
     <div className="space-y-5">
       <button onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))} className="text-lg font-semibold text-emerald-800 underline">← Back</button>
+      <span className={`inline-block rounded-full px-3 py-1 text-base font-bold ${CUISINE_TONE[cuisineIdOf(recipe)].badge}`}>{originOf(recipe)}</span>
       <h1 className="text-3xl font-bold">{recipe.name}</h1>
       {recipe.name_zh && <p className="text-2xl font-semibold text-stone-700">{recipe.name_zh}</p>}
       <RecipePhoto id={recipe.recipe_id} name={recipe.name} emoji={emojiOf(recipe)} />
@@ -35,7 +39,10 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
       <p className="text-base text-stone-700">
         About {Math.round(recipeSodium(recipe) / 8 / 10) * 10} mg sodium per person (rough estimate; the daily limit is 2,000 mg for all food). Rough cost S${(recipe.estimated_cost_sgd * servings / 8).toFixed(2)}.
       </p>
-      <HeartButton id={recipe.recipe_id} servings={servings} big />
+      <div className="flex flex-wrap items-center gap-2">
+        <HeartButton id={recipe.recipe_id} servings={servings} big />
+      </div>
+      <AddToPlan recipeId={recipe.recipe_id} servings={servings} />
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Number of people"><span className="text-lg font-semibold">Cook for:</span>
         {[2, 4, 6, 8].map((n) => (
           <button

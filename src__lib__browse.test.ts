@@ -1,6 +1,7 @@
 import { catalog, browseRecipes, library, festivalLibrary, findRecipe } from "./sample-data";
-import { CUISINES, TYPES, totalMinutes } from "./browse";
-import { buildRecipeShoppingList } from "./shopping";
+import { CUISINES, TYPES, totalMinutes, cuisineIdOf } from "./browse";
+import { CUISINE_TONE, TYPE_TONE } from "./theme";
+import { buildRecipeShoppingList, buildShoppingList, mergeShoppingLists } from "./shopping";
 import { recipeSodium } from "./sodium";
 import { mainProtein } from "./protein";
 import { generatePlan } from "./generator";
@@ -39,4 +40,21 @@ ok(!list.some((x) => /water/i.test(x.name)), "tap water is not on the shopping l
 
 const plan = generatePlan({ startDate: "2026-10-12", days: 90, library });
 ok(plan.days.length === 90 && validatePlan(plan.days).length === 0, "the 90-day meal plan is still valid");
+ok(CUISINES.every((c) => !!CUISINE_TONE[c.id]) && TYPES.every((t) => !!TYPE_TONE[t.id]), "every cuisine tile and dish type has a colour");
+ok(catalog.every((r) => !!CUISINE_TONE[cuisineIdOf(r)]), "every recipe maps to a cuisine colour");
+ok(new Set(CUISINES.map((c) => CUISINE_TONE[c.id].on)).size === CUISINES.length, "each cuisine has its own colour");
+const merged = mergeShoppingLists(buildShoppingList(plan.days.slice(0, 1)).items, buildRecipeShoppingList([{ recipe: findRecipe("R-CT-004")!, servings: 8 }]));
+const mEggs = merged.find((x) => x.name === "Eggs");
+const pEggs = buildShoppingList(plan.days.slice(0, 1)).items.find((x) => x.name === "Eggs")?.qty ?? 0;
+ok(!!mEggs && Math.abs(mEggs.qty - (pEggs + 8)) < 1e-9, "added recipes are summed into the plan shopping list (eggs add up)");
+// swapping in a recipe-book dish: the rules engine still checks the day
+import { checkDay } from "./rules";
+{
+  const d = plan.days[3];
+  const protein = d.slots.dinner.findIndex((r) => r.dish_class === "protein");
+  const pool = catalog.filter((r) => r.dish_class === "protein" && r.browse && !r.festival);
+  ok(pool.length >= 60, `${pool.length} recipe-book protein dishes can be offered in the swap list`);
+  const swapped = { ...d, slots: { ...d.slots, dinner: d.slots.dinner.map((r, k) => (k === protein ? pool[0] : r)) } };
+  ok(Array.isArray(checkDay(swapped)), "a day with a recipe-book dish swapped in can still be checked by the meal rules");
+}
 console.log(n, "passed");

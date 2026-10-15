@@ -5,6 +5,7 @@ import { PeopleProvider } from "@/components/PeopleProvider";
 import { PlanProvider } from "@/components/PlanProvider";
 import { FavouritesProvider } from "@/components/FavouritesProvider";
 import { PhotosProvider } from "@/components/PhotosProvider";
+import { ExtrasProvider } from "@/components/ExtrasProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <PeopleProvider>
             <FavouritesProvider>
               <PhotosProvider>
-                <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+                <ExtrasProvider>
+                  <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+                </ExtrasProvider>
               </PhotosProvider>
             </FavouritesProvider>
           </PeopleProvider>

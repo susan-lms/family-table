@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html { font-size: 18px; }
-body { background: #faf8f4; color: #1f2933; }
+body { background: linear-gradient(180deg, #fff7e6 0%, #fffdf8 220px); background-attachment: fixed; color: #1f2933; }
 
 html.big { font-size: 22px; }
 @media print {

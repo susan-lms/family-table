@@ -9,6 +9,8 @@ import { buildRecipeShoppingList, formatQty } from "@/lib/shopping";
 import { ingredientZh } from "@/lib/zh-ingredients";
 import { emojiOf, fmtMinutes, totalMinutes } from "@/lib/browse";
 import { Thumb } from "@/components/PhotosProvider";
+import { CUISINE_TONE } from "@/lib/theme";
+import { cuisineIdOf } from "@/lib/browse";
 import type { Recipe } from "@/lib/types";
 
 const SIZES = [2, 4, 6, 8];
@@ -24,7 +26,7 @@ export default function Saved() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-3xl font-bold">Saved recipes 收藏</h1>
+      <h1 className="text-3xl font-bold text-rose-600">♥ Saved recipes 收藏</h1>
       {entries.length === 0 ? (
         <p className="rounded-xl bg-stone-100 px-4 py-4 text-lg">
           Nothing saved yet. Tap “♡ Save” on any recipe and it will appear here, with one shopping list for all of them.{" "}
@@ -34,7 +36,7 @@ export default function Saved() {
         <>
           <ul className="space-y-3">
             {entries.map(({ recipe: r, servings }) => (
-              <li key={r.recipe_id} className="rounded-2xl border border-stone-300 bg-white p-4">
+              <li key={r.recipe_id} className={`rounded-2xl border border-l-8 border-stone-200 bg-white p-4 ${CUISINE_TONE[cuisineIdOf(r)].edge}`}>
                 <Link href={`/cook/${r.recipe_id}?for=${servings}`} className="flex items-center gap-3">
                   <Thumb id={r.recipe_id} emoji={emojiOf(r)} size={64} />
                   <span className="flex-1">

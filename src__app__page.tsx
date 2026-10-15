@@ -3,16 +3,26 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { catalog, EXCLUDED_CUISINES } from "@/lib/sample-data";
-import { CUISINES, MEAT_CHIPS, TIME_OPTIONS, TYPES, emojiOf, fmtMinutes, originOf, totalMinutes } from "@/lib/browse";
+import { CUISINES, MEAT_CHIPS, TIME_OPTIONS, TYPES, cuisineIdOf, emojiOf, fmtMinutes, originOf, totalMinutes } from "@/lib/browse";
+import { CUISINE_TONE, TYPE_TONE } from "@/lib/theme";
 import { mainProtein } from "@/lib/protein";
 import { isSoft } from "@/lib/softness";
 import { HeartButton } from "@/components/FavouritesProvider";
 import { Thumb } from "@/components/PhotosProvider";
+import AddToPlan from "@/components/AddToPlan";
 
 const PAGE = 24;
 
+/** A friendly hello that matches the time of day in Singapore. */
+function greeting(): string {
+  const h = Number(new Date().toLocaleString("en-GB", { hour: "numeric", hour12: false, timeZone: "Asia/Singapore" }));
+  return h < 11 ? "Good morning! 早安" : h < 15 ? "Good afternoon! 午安" : h < 19 ? "Good evening! 晚上好" : "Good evening! 晚安";
+}
+
 const chip = (on: boolean) =>
   `rounded-full px-4 py-3 text-lg font-semibold ${on ? "bg-emerald-700 text-white" : "bg-stone-200 text-stone-900"}`;
+const typeChip = (id: string, on: boolean) =>
+  `rounded-full border-2 px-4 py-3 text-lg font-semibold ${on ? TYPE_TONE[id].on : TYPE_TONE[id].tile}`;
 
 export default function RecipeBook() {
   const [cuisine, setCuisine] = useState("all");
@@ -23,6 +33,8 @@ export default function RecipeBook() {
   const [softOnly, setSoftOnly] = useState(false);
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(PAGE);
+  const [planFor, setPlanFor] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
 
   const pool = useMemo(() => catalog.filter((r) => !EXCLUDED_CUISINES.includes(r.cuisine)), []);
   const cuisineTest = CUISINES.find((c) => c.id === cuisine)!.test;
@@ -51,9 +63,10 @@ export default function RecipeBook() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-3xl font-bold">Family Table recipes 家常食谱</h1>
-        <p className="mt-1 text-lg text-stone-700">Pick a cuisine and a type of dish. Every recipe is written to be gentle on salt, sugar and oil.</p>
+      <header className="rounded-3xl bg-gradient-to-r from-orange-200 via-amber-100 to-lime-200 p-5">
+        <p className="text-xl font-semibold text-orange-900">{greeting()} 😊</p>
+        <h1 className="mt-1 text-3xl font-bold text-stone-900">What shall we cook today? 今天煮什么？</h1>
+        <p className="mt-1 text-lg text-stone-800">Pick a cuisine and a type of dish. Every recipe is gentle on salt, sugar and oil.</p>
       </header>
 
       <input
@@ -66,14 +79,14 @@ export default function RecipeBook() {
       />
 
       <section aria-label="Cuisine">
-        <h2 className="mb-2 text-xl font-semibold text-emerald-800">1. Choose a cuisine 菜系</h2>
+        <h2 className="mb-2 text-xl font-bold text-orange-700">1. Choose a cuisine 菜系</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {CUISINES.map((c) => (
             <button
               key={c.id}
               onClick={() => { setCuisine(c.id); reset(); }}
               aria-pressed={cuisine === c.id}
-              className={`rounded-2xl border-2 px-3 py-3 text-left ${cuisine === c.id ? "border-emerald-700 bg-emerald-700 text-white" : "border-stone-300 bg-white"}`}
+              className={`rounded-2xl border-2 px-3 py-3 text-left ${cuisine === c.id ? CUISINE_TONE[c.id].on : CUISINE_TONE[c.id].tile}`}
             >
               <span className="block text-2xl">{c.emoji}</span>
               <span className="block text-lg font-semibold leading-tight">{c.label}</span>
@@ -84,10 +97,10 @@ export default function RecipeBook() {
       </section>
 
       <section aria-label="Type of dish">
-        <h2 className="mb-2 text-xl font-semibold text-emerald-800">2. Choose a type of dish 菜式</h2>
+        <h2 className="mb-2 text-xl font-bold text-emerald-700">2. Choose a type of dish 菜式</h2>
         <div className="flex flex-wrap gap-2">
           {TYPES.map((t) => (
-            <button key={t.id} onClick={() => { setType(t.id); setMeat("all"); setPieKind("all"); reset(); }} aria-pressed={type === t.id} className={chip(type === t.id)}>
+            <button key={t.id} onClick={() => { setType(t.id); setMeat("all"); setPieKind("all"); reset(); }} aria-pressed={type === t.id} className={typeChip(t.id, type === t.id)}>
               {t.emoji} {t.label}
             </button>
           ))}
@@ -130,20 +143,30 @@ export default function RecipeBook() {
       <ul className="space-y-3">
         {shown.slice(0, limit).map((r) => (
           <li key={r.recipe_id}>
-            <Link href={`/cook/${r.recipe_id}?for=4`} className="flex items-start gap-3 rounded-2xl border border-stone-300 bg-white p-4 shadow-sm">
+            <Link href={`/cook/${r.recipe_id}?for=4`} className={`flex items-start gap-3 rounded-2xl border border-l-8 border-stone-200 bg-white p-4 shadow-sm ${CUISINE_TONE[cuisineIdOf(r)].edge}`}>
               <Thumb id={r.recipe_id} emoji={emojiOf(r)} />
               <span className="min-w-0 flex-1">
                 <span className="block text-xl font-bold leading-snug">{r.name}</span>
                 {r.name_zh && <span className="block text-lg text-stone-700">{r.name_zh}</span>}
                 <span className="mt-1 flex flex-wrap gap-2 text-base">
                   <span className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-900">⏱ {fmtMinutes(totalMinutes(r))}</span>
-                  <span className="rounded-full bg-stone-100 px-3 py-1">{originOf(r)}</span>
+                  <span className={`rounded-full px-3 py-1 font-semibold ${CUISINE_TONE[cuisineIdOf(r)].badge}`}>{originOf(r)}</span>
                   {r.dish_class !== "soup" && r.dish_class !== "vegetable" && r.dish_class !== "pie" && r.dish_class !== "salad" && <span className="rounded-full bg-stone-100 px-3 py-1">{mainProtein(r)}</span>}
                   {r.sweet && <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-900">sweet</span>}
                   {isSoft(r) && <span className="rounded-full bg-sky-100 px-3 py-1 text-sky-900">soft</span>}
                 </span>
               </span>
-              <HeartButton id={r.recipe_id} servings={4} />
+              <span className="flex flex-col gap-2">
+                <HeartButton id={r.recipe_id} servings={4} />
+                <button
+                  type="button"
+                  aria-label={`Add ${r.name} to the meal plan`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setToast(""); setPlanFor(r.recipe_id); }}
+                  className="rounded-full border-2 border-emerald-500 bg-emerald-50 px-3 py-2 text-base font-semibold text-emerald-900"
+                >
+                  📅 Plan
+                </button>
+              </span>
             </Link>
           </li>
         ))}
@@ -155,6 +178,19 @@ export default function RecipeBook() {
         </button>
       )}
 
+      {toast && (
+        <p className="fixed inset-x-4 bottom-24 z-20 rounded-2xl bg-emerald-700 px-4 py-4 text-center text-lg font-semibold text-white shadow-lg md:bottom-6 md:left-auto md:max-w-md" role="status">
+          ✓ {toast}
+        </p>
+      )}
+      {planFor && (
+        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/50 md:items-center" role="dialog" aria-modal="true" aria-label="Add to meal plan">
+          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-t-2xl bg-white p-4 md:rounded-2xl">
+            <p className="mb-2 text-xl font-bold">{pool.find((r) => r.recipe_id === planFor)?.name}</p>
+            <AddToPlan recipeId={planFor} servings={4} startOpen onDone={(m) => { setPlanFor(null); if (m) { setToast(m); setTimeout(() => setToast(""), 4000); } }} />
+          </div>
+        </div>
+      )}
       <p className="text-sm text-stone-500">Sample recipes written for this app. Not yet taste-tested. Chinese names are not yet checked by a native speaker.</p>
     </div>
   );

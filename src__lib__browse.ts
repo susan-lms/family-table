@@ -62,5 +62,20 @@ export function emojiOf(r: Recipe): string {
   return "🍽️";
 }
 
+/** Which cuisine tile a recipe belongs to (used for its colour). */
+export function cuisineIdOf(r: Recipe): string {
+  if (r.region) return r.region.toLowerCase();
+  switch (r.cuisine) {
+    case "Chinese": return "chinese";
+    case "Western": return "western";
+    case "Mexican": return "mexican";
+    case "Japanese": return "japanese";
+    case "Korean": return "korean";
+    case "Thai": return "thai";
+    case "Malaysian": case "Indonesian": return "southeast";
+    default: return "other";
+  }
+}
+
 /** Short label for the card badge: region first, then cuisine. */
 export const originOf = (r: Recipe): string => r.region ?? (r.cuisine === "Mexican" ? "Mexican-style" : r.cuisine);
