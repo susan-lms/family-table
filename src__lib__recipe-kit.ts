@@ -34,3 +34,7 @@ export const T = (
   id: string, name: string, cuisine: Cuisine, cls: DishClass, prep: number, cook: number, cost: number,
   equipment: string[], ingredients: Ingredient[], steps: string[], note: string, safety?: string, allergens?: string[],
 ): Recipe => R({ id, name, cuisine, cls, prep, cook, cost, equipment, ingredients, steps, note, safety, allergens });
+
+/** Recipe-book only dishes: never used by the meal planner. All are meant to take 30 minutes or less. */
+export const BR = (r: Recipe, extra: Partial<Recipe> = {}): Recipe => ({ ...r, browse: true, ...extra });
+export const RG = (region: NonNullable<Recipe["region"]>, r: Recipe, extra: Partial<Recipe> = {}): Recipe => BR(r, { region, ...extra });

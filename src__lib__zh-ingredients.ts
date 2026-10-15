@@ -1,5 +1,11 @@
 /** Simplified Chinese names for ingredients, matched by keyword (first match wins). Not checked by a native speaker. */
 const RULES: Array<[RegExp, string]> = [
+  [/tapioca flour/, "木薯粉"], [/^milk$/, "牛奶"], [/apples/, "苹果"], [/raisins/, "葡萄干"], [/rock sugar/, "冰糖"], [/mango/, "芒果"], [/fresh mint/, "薄荷叶"], [/minced lamb/, "羊肉碎"], [/lamb chops/, "羊排"], [/lamb/, "羊肉"], [/oyster/, "蚝"], [/pomfret/, "鲳鱼"], [/popiah skin/, "薄饼皮"], [/jicama/, "沙葛"],
+  [/salted egg/, "咸蛋"], [/preserved radish|chai poh/, "菜脯"], [/salted mustard/, "咸菜"], [/preserved mustard|mui choy/, "梅菜"], [/mustard greens/, "芥菜"],
+  [/dried shrimp/, "虾米"], [/dried squid/, "鱿鱼干"], [/fish balls/, "鱼丸"], [/tofu puffs/, "豆腐泡"], [/dried tofu skin/, "腐竹/豆腐皮"], [/bean paste/, "豆酱"], [/sweet bean sauce/, "甜面酱"],
+  [/wholemeal wraps/, "全麦墨西哥薄饼"], [/puff pastry sheet/, "酥皮"], [/grated cheese/, "芝士丝"], [/black beans/, "黑豆"], [/avocado/, "牛油果"],
+  [/green tea leaves/, "绿茶叶"], [/rice vinegar/, "米醋"], [/unsalted butter/, "无盐牛油"], [/bitter gourd/, "苦瓜"], [/water chestnut/, "马蹄"], [/glass noodles/, "粉丝"],
+  [/clams/, "蛤蜊"], [/jicama/, "沙葛"], [/chives/, "韭菜"], [/kailan/, "芥兰"], [/cumin/, "孜然"], [/rosemary/, "迷迭香"], [/dill/, "莳萝"], [/mild chilli powder/, "辣椒粉(小辣)"],
   [/minced chicken or lean beef/, "鸡肉碎/瘦牛肉碎"], [/minced chicken/, "鸡肉碎"], [/chicken wings/, "鸡翅"], [/drumstick|chicken leg/, "鸡腿"], [/chicken thigh/, "鸡腿肉"], [/chicken breast/, "鸡胸肉"],
   [/whole chicken/, "整只鸡"], [/minced chicken or lean beef/, "鸡肉碎/瘦牛肉碎"], [/minced chicken/, "鸡肉碎"],
   [/minced beef|ground beef/, "牛肉碎"], [/beef brisket/, "牛腩"], [/beef shin|chuck/, "牛腱/牛肩肉"], [/beef sirloin|beef/, "牛肉"],

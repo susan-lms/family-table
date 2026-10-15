@@ -1,10 +1,9 @@
 import Link from "next/link";
 
 const links = [
-  { href: "/", label: "Today" },
-  { href: "/planner", label: "Week" },
-  { href: "/recipes", label: "Recipes" },
-  { href: "/shopping", label: "Shopping" },
+  { href: "/", label: "Recipes" },
+  { href: "/saved", label: "Saved" },
+  { href: "/planner", label: "Meal plan" },
   { href: "/more", label: "More" },
 ];
 

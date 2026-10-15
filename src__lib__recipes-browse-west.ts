@@ -1,0 +1,98 @@
+import { i, T, BR, POULTRY, FISH, PORK, BEEF, EGGS, SHELLFISH } from "./recipe-kit";
+import type { Recipe } from "./types";
+
+/** RECIPE BOOK — Western mains and soups, and lamb dishes. Each takes 30 minutes or less. Original drafts, NOT yet taste-tested. For 8 people. */
+const V = "Vegetables" as const, P = "Pantry" as const, M = "Meat" as const, S = "Seafood" as const, E = "Eggs & dairy" as const, O = "Other" as const, F = "Fruit" as const;
+const olive = (n: number, u: "tbsp" | "tsp" = "tbsp") => i("Olive oil", n, u, P);
+const water = (ml: number) => i("Water", ml, "ml", O);
+const pan = ["Large pan"], pot = ["Pot"], tray = ["Baking tray", "Oven"];
+
+export const westMains: Recipe[] = [
+  BR(T("R-WB-001", "Lemon herb chicken tray bake", "Western", "protein", 10, 20, 0, tray,
+    [i("Chicken thigh, boneless", 700, "g", M, "cut in small pieces"), i("Potatoes", 500, "g", V, "small cubes"), i("Carrots", 2, "piece", V, "thin sticks"), i("Zucchini", 300, "g", V, "chunks"), olive(1), i("Lemon", 1, "piece", F, "juiced"), i("Dried mixed herbs", 1, "tsp", P), i("Garlic", 3, "piece", V, "sliced")],
+    ["Heat the oven to 220°C.", "Toss everything with the oil, lemon juice and herbs on a large tray. Spread in one layer.", "Bake 20 minutes, turning once, until the chicken has no pink and the potato is soft.", "Serve hot."],
+    "Small pieces cook fast. One spoon of oil for the whole tray. No salt: lemon and herbs do the work.", POULTRY)),
+  BR(T("R-WB-002", "Baked salmon with lemon and dill", "Western", "protein", 6, 15, 0, tray,
+    [i("Salmon fillet", 600, "g", S), i("Lemon", 1, "piece", F, "sliced"), i("Fresh dill", 15, "g", V, "chopped"), olive(2, "tsp"), i("Black pepper", 0.25, "tsp", P), i("Broccoli", 500, "g", V, "florets")],
+    ["Heat the oven to 200°C.", "Put the salmon on a tray. Top with lemon slices, dill, oil and pepper. Put the broccoli beside it.", "Bake 12 to 15 minutes until the fish flakes with a fork.", "Serve."],
+    "Salmon is rich in omega-3. No salt added.", FISH, ["Fish"])),
+  BR(T("R-WB-003", "Beef meatballs in tomato sauce", "Western", "protein", 15, 15, 0, pan,
+    [i("Minced beef", 500, "g", M), i("Wholemeal breadcrumbs", 30, "g", P), i("Eggs", 1, "piece", E), i("Canned tomatoes", 400, "g", P), i("Onion", 1, "piece", V, "chopped"), i("Garlic", 3, "piece", V, "minced"), olive(1), i("Dried mixed herbs", 1, "tsp", P), water(100)],
+    ["Mix the beef, breadcrumbs, egg and half the garlic. Roll into 24 small balls.", "Heat the oil. Brown the balls 4 minutes. Remove.", "Fry the onion and rest of the garlic 2 minutes. Add the tomatoes, herbs and water.", "Return the balls. Cover and simmer 10 minutes until cooked through. Serve."],
+    "No added salt or sugar. Tomatoes give natural sweetness.", BEEF, ["Egg", "Gluten"])),
+  BR(T("R-WB-004", "Tomato spaghetti with minced chicken and vegetables", "Western", "onedish", 8, 20, 0, pot,
+    [i("Spaghetti", 400, "g", P), i("Minced chicken", 400, "g", M), i("Canned tomatoes", 400, "g", P), i("Carrots", 2, "piece", V, "grated"), i("Zucchini", 300, "g", V, "grated"), i("Garlic", 3, "piece", V, "minced"), olive(1), i("Dried mixed herbs", 1, "tsp", P)],
+    ["Boil the spaghetti in plain water (no salt) until soft. Drain.", "Heat the oil. Fry the garlic. Add the chicken and cook 5 minutes.", "Add the carrot, zucchini, tomatoes and herbs. Simmer 10 minutes.", "Mix with the spaghetti. Serve."],
+    "No salt in the pasta water. Vegetables are hidden in the sauce.", POULTRY, ["Gluten"]), { meal: "noodles" }),
+  BR(T("R-WB-005", "Baked fish with tomatoes and herbs", "Western", "protein", 8, 18, 0, tray,
+    [i("White fish", 700, "g", S, "thick fillets"), i("Tomatoes", 4, "piece", V, "sliced"), i("Onion", 1, "piece", V, "sliced"), olive(1), i("Dried mixed herbs", 1, "tsp", P), i("Lemon", 1, "piece", F, "juiced")],
+    ["Heat the oven to 200°C.", "Spread the onion and tomato in a dish. Lay the fish on top.", "Drizzle with oil and lemon juice. Add herbs.", "Bake 15 to 18 minutes until the fish flakes. Serve."],
+    "No added salt.", FISH, ["Fish"])),
+  BR(T("R-WB-006", "Chicken and mushroom in yoghurt sauce", "Western", "protein", 10, 18, 0, pan,
+    [i("Chicken breast", 600, "g", M, "sliced thin"), i("Mushrooms", 300, "g", V, "sliced"), i("Plain yoghurt", 150, "g", E), i("Garlic", 3, "piece", V, "minced"), olive(1), i("Black pepper", 0.25, "tsp", P), water(100)],
+    ["Heat the oil. Cook the chicken 5 minutes until no longer pink. Remove.", "Cook the mushrooms and garlic 4 minutes.", "Add the water. Return the chicken. Simmer 3 minutes.", "Turn off the heat. Stir in the yoghurt and pepper. Serve."],
+    "Yoghurt replaces cream. Add it off the heat so it does not split.", POULTRY, ["Milk"])),
+  BR(T("R-WB-007", "Herb pork steaks with steamed vegetables", "Western", "protein", 8, 15, 0, pan,
+    [i("Lean pork", 600, "g", M, "thin steaks"), i("Dried mixed herbs", 1, "tsp", P), olive(1), i("Garlic", 2, "piece", V, "minced"), i("Green beans", 400, "g", V), i("Carrots", 2, "piece", V, "sliced")],
+    ["Rub the pork with the herbs and garlic.", "Steam the beans and carrots 8 minutes.", "Heat the oil. Cook the pork 4 to 5 minutes each side until no pink.", "Rest 2 minutes. Slice and serve with the vegetables."],
+    "Thin steaks cook quickly and stay soft.", PORK)),
+  BR(T("R-WB-008", "Chicken and mashed potato bake", "Western", "protein", 12, 18, 0, ["Baking dish", "Oven", "Pot"],
+    [i("Minced chicken", 500, "g", M), i("Potatoes", 800, "g", V, "cubed"), i("Carrots", 2, "piece", V, "diced"), i("Green peas", 150, "g", V), i("Onion", 1, "piece", V, "chopped"), olive(1), i("Plain yoghurt", 3, "tbsp", E), water(150)],
+    ["Boil the potatoes 12 minutes. Drain and mash with the yoghurt.", "Meanwhile cook the onion in the oil 2 minutes. Add the chicken, carrot, peas and water. Cook 10 minutes.", "Put the filling in a dish. Cover with mash. Bake at 220°C for 8 minutes until golden on top.", "Serve."],
+    "No butter or cream. Very soft: good for the seniors.", POULTRY, ["Milk"])),
+  BR(T("R-WB-009", "Vegetable frittata", "Western", "protein", 8, 15, 0, ["Non-stick pan with lid"],
+    [i("Eggs", 8, "piece", E), i("Spinach", 200, "g", V), i("Mushrooms", 150, "g", V, "sliced"), i("Cherry tomatoes", 150, "g", V, "halved"), olive(1), i("Black pepper", 0.25, "tsp", P)],
+    ["Beat the eggs with the pepper.", "Heat the oil. Cook the mushrooms 3 minutes. Add the spinach and tomatoes until the spinach wilts.", "Pour in the egg. Cover and cook on low heat 8 to 10 minutes until set.", "Cut in wedges and serve."],
+    "No cheese or salt needed.", EGGS, ["Egg"])),
+  BR(T("R-WB-010", "Garlic lemon prawns", "Western", "protein", 10, 6, 0, pan,
+    [i("Prawns, peeled", 600, "g", S), i("Garlic", 6, "piece", V, "sliced"), olive(1), i("Lemon", 1, "piece", F, "juiced"), i("Fresh parsley", 15, "g", V, "chopped"), i("Black pepper", 0.25, "tsp", P)],
+    ["Heat the oil on medium heat. Fry the garlic 30 seconds.", "Add the prawns. Cook 3 to 4 minutes until pink.", "Add the lemon juice, parsley and pepper. Toss and serve."],
+    "No salt: lemon and garlic give the taste.", SHELLFISH, ["Shellfish"])),
+];
+
+export const westSoups: Recipe[] = [
+  BR(T("R-WB-101", "Tomato soup", "Western", "soup", 8, 20, 0, ["Pot", "Blender"],
+    [i("Tomatoes", 8, "piece", V, "chopped"), i("Carrots", 2, "piece", V, "chopped"), i("Onion", 1, "piece", V, "chopped"), i("Garlic", 3, "piece", V), olive(1), water(1000), i("Dried mixed herbs", 1, "tsp", P)],
+    ["Heat the oil. Cook the onion and garlic 3 minutes.", "Add tomato, carrot, herbs and water. Simmer 15 minutes.", "Blend until smooth (or mash well). Serve."],
+    "No cream, salt or sugar. Ripe tomatoes are sweet enough.")),
+  BR(T("R-WB-102", "Pumpkin soup", "Western", "soup", 8, 22, 0, ["Pot", "Blender"],
+    [i("Pumpkin", 1000, "g", V, "small cubes"), i("Onion", 1, "piece", V, "chopped"), i("Garlic", 2, "piece", V), olive(1), water(1200), i("Black pepper", 0.25, "tsp", P)],
+    ["Heat the oil. Cook the onion and garlic 3 minutes.", "Add the pumpkin and water. Simmer 15 minutes until very soft.", "Blend until smooth. Add pepper. Serve."],
+    "Smooth and soft for the seniors. No cream, salt or sugar.")),
+  BR(T("R-WB-103", "Cream of mushroom soup (no cream)", "Western", "soup", 8, 20, 0, ["Pot", "Blender"],
+    [i("Mushrooms", 600, "g", V, "chopped"), i("Potatoes", 300, "g", V, "cubed"), i("Onion", 1, "piece", V, "chopped"), i("Garlic", 2, "piece", V), olive(1), water(1200), i("Black pepper", 0.25, "tsp", P)],
+    ["Heat the oil. Cook the onion, garlic and mushrooms 6 minutes.", "Add the potato and water. Simmer 12 minutes.", "Blend until creamy. Add pepper. Serve."],
+    "The potato makes it creamy, so no cream is needed.")),
+  BR(T("R-WB-104", "Chicken and sweet corn soup", "Western", "soup", 8, 20, 0, pot,
+    [i("Chicken breast", 300, "g", M, "diced small"), i("Sweet corn kernels", 300, "g", V), i("Carrots", 1, "piece", V, "diced"), i("Ginger", 10, "g", V, "sliced"), water(1800), i("Eggs", 2, "piece", E, "beaten")],
+    ["Boil the water with the ginger, chicken and carrot for 10 minutes.", "Add the corn. Simmer 5 minutes.", "Turn off the heat. Stir in the egg slowly. Serve."],
+    "No salt or stock cubes.", POULTRY + " " + EGGS, ["Egg"])),
+  BR(T("R-WB-105", "Vegetable minestrone", "Western", "soup", 12, 18, 0, pot,
+    [i("Carrots", 2, "piece", V, "diced"), i("Zucchini", 250, "g", V, "diced"), i("Celery", 150, "g", V, "diced"), i("Canned tomatoes", 400, "g", P), i("White beans", 200, "g", P, "canned, rinsed"), i("Spaghetti", 80, "g", P, "broken small"), olive(1), water(1500), i("Dried mixed herbs", 1, "tsp", P)],
+    ["Heat the oil. Cook carrot, celery and zucchini 4 minutes.", "Add tomatoes, beans, herbs and water. Simmer 8 minutes.", "Add the spaghetti. Cook 6 minutes until soft. Serve."],
+    "Rinse canned beans well to remove extra salt.", undefined, ["Gluten"])),
+];
+
+export const lamb: Recipe[] = [
+  BR(T("R-LB-001", "Cumin lamb stir-fry", "Chinese", "protein", 12, 8, 0, ["Wok"],
+    [i("Lamb leg", 500, "g", M, "sliced thin"), i("Onion", 2, "piece", V, "sliced"), i("Cumin", 2, "tsp", P, "ground"), i("Garlic", 4, "piece", V, "minced"), i("Chilli", 1, "piece", V, "optional, sliced"), oil2(1), i("Light soy sauce (low salt)", 1, "tbsp", P), i("Spring onion", 2, "piece", V, "cut")],
+    ["Mix the lamb with the cumin and half the soy sauce. Rest 10 minutes.", "Heat the oil. Fry the garlic and onion 3 minutes.", "Add the lamb. Stir on high heat 3 to 4 minutes until cooked through.", "Add the rest of the soy sauce and the spring onion. Serve."],
+    "Spices give the taste instead of salt. Slice thin so the lamb stays tender.", "Cook lamb until it is no longer pink in the middle. Keep raw lamb away from other food.", ["Soy"])),
+  BR(T("R-LB-002", "Lamb with ginger and spring onion", "Chinese", "protein", 12, 10, 0, ["Wok"],
+    [i("Lamb leg", 500, "g", M, "sliced thin"), i("Ginger", 40, "g", V, "shredded"), i("Spring onion", 6, "piece", V, "cut in 4 cm"), i("Shaoxing wine", 1, "tbsp", P), i("Light soy sauce (low salt)", 1, "tbsp", P), i("Cornflour", 2, "tsp", P), oil2(1)],
+    ["Mix the lamb with the wine, soy sauce and cornflour. Rest 10 minutes.", "Heat the oil. Fry the ginger 30 seconds.", "Add the lamb. Stir 3 minutes.", "Add the spring onion. Stir 1 minute. Serve."],
+    "Plenty of ginger takes away the strong lamb smell. One spoon of oil.", "Cook lamb until it is no longer pink. Keep raw lamb away from other food.", ["Soy"])),
+  BR(T("R-LB-003", "Rosemary lamb chops with vegetables", "Western", "protein", 10, 15, 0, ["Pan", "Steamer"],
+    [i("Lamb chops", 800, "g", M), i("Fresh rosemary", 10, "g", V, "chopped"), i("Garlic", 3, "piece", V, "minced"), olive(1), i("Lemon", 1, "piece", F, "juiced"), i("Green beans", 400, "g", V), i("Pumpkin", 400, "g", V, "cubed")],
+    ["Rub the chops with the rosemary, garlic and lemon juice.", "Steam the beans and pumpkin 10 minutes.", "Heat the oil. Cook the chops 4 to 5 minutes each side until no pink inside.", "Rest 3 minutes. Serve with the vegetables."],
+    "Trim the fat off the chops. Cut the meat off the bone for the seniors.", "Cook lamb until no pink remains. Keep raw lamb away from other food.")),
+  BR(T("R-LB-004", "Lamb meatballs in tomato sauce", "Western", "protein", 15, 15, 0, ["Large pan"],
+    [i("Minced lamb", 500, "g", M), i("Onion", 1, "piece", V, "grated"), i("Garlic", 3, "piece", V, "minced"), i("Cumin", 1, "tsp", P), i("Canned tomatoes", 400, "g", P), olive(1), i("Fresh parsley", 10, "g", V, "chopped"), water(100)],
+    ["Mix the lamb, half the onion, half the garlic and the cumin. Roll into 20 small balls.", "Heat the oil. Brown the balls 4 minutes.", "Add the rest of the onion and garlic, the tomatoes and water. Cover and simmer 10 minutes.", "Add the parsley. Serve."],
+    "No salt added. The cumin and tomato give a rich taste.", "Cook lamb until no pink remains. Keep raw lamb away from other food.")),
+  BR(T("R-LB-005", "Lamb kofta wraps", "Western", "wrap", 15, 12, 0, ["Pan"],
+    [i("Minced lamb", 500, "g", M), i("Onion", 1, "piece", V, "grated"), i("Cumin", 1, "tsp", P), i("Fresh parsley", 10, "g", V, "chopped"), i("Wholemeal wraps", 8, "piece", P), i("Cucumber", 1, "piece", V, "sliced"), i("Tomatoes", 2, "piece", V, "sliced"), i("Plain yoghurt", 100, "g", E), i("Lettuce", 1, "piece", V, "leaves")],
+    ["Mix the lamb, onion, cumin and parsley. Shape into 16 small sausages.", "Cook in a dry non-stick pan 10 to 12 minutes, turning, until browned and cooked through.", "Warm the wraps. Spread with yoghurt.", "Fill with lettuce, cucumber, tomato and 2 koftas. Roll up and serve."],
+    "Yoghurt sauce replaces salty sauces. Wraps carry some salt, so keep to one each.", "Cook lamb until no pink remains.", ["Gluten", "Milk"])),
+];
+function oil2(n: number) { return i("Cooking oil", n, "tbsp", "Pantry"); }

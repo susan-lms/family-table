@@ -1,6 +1,6 @@
 export type Cuisine =
   | "Chinese" | "Western" | "Japanese" | "Korean" | "Fusion" | "Spanish"
-  | "Thai" | "Indonesian" | "Malaysian" | "Indian";
+  | "Thai" | "Indonesian" | "Malaysian" | "Indian" | "Mexican";
 
 export type DishClass =
   | "protein"
@@ -9,6 +9,9 @@ export type DishClass =
   | "snack"
   | "breakfast_item"
   | "onepot" // quick one-pot meal: rice + protein + vegetables in one pot
+  | "wrap" // wraps, burrito bowls, quesadillas (browse only)
+  | "pie" // savoury or sweet pies (browse only)
+  | "salad" // salads (browse only)
   | "onedish" // complete one-dish meal that is not rice-with-dishes: porridge, noodles, sandwiches
   | "staple";
 
@@ -37,6 +40,9 @@ export interface Recipe {
   estimated_cost_sgd: number; // placeholder estimate, not a real price
   is_sample: boolean; // true until a person has checked it
   meal?: "porridge" | "noodles" | "sandwich"; // style of a one-dish meal
+  region?: "Cantonese" | "Teochew" | "Hokkien" | "Hakka"; // Chinese regional style
+  browse?: boolean; // recipe-book only: never used by the meal planner
+  sweet?: boolean; // sweet pie or dessert
   festival?: string; // festival-only dish (used by the festival menus, never by the normal plan)
   treat?: boolean; // deep-fried or rich dish: the planner allows at most 1 per 7 days
   ingredients?: Ingredient[]; // missing = "recipe details coming"

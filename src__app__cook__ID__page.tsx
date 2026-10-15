@@ -13,6 +13,7 @@ export default async function CookPage({
   const { for: forParam } = await searchParams;
   const recipe = findRecipe(id);
   if (!recipe || !recipe.steps) notFound();
-  const servings = forParam === "4" ? 4 : 8;
+  const n = Number(forParam);
+  const servings = [2, 4, 6, 8].includes(n) ? n : 8;
   return <CookMode recipe={recipe} initialServings={servings} />;
 }

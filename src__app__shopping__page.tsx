@@ -72,7 +72,7 @@ export default function Shopping() {
           </ul>
         </section>
       ))}
-      <Link href="/" className="no-print inline-block text-lg font-semibold text-emerald-800 underline">Back to today</Link>
+      <Link href="/today" className="no-print inline-block text-lg font-semibold text-emerald-800 underline">Back to today</Link>
     </div>
   );
 }

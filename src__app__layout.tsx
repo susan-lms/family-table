@@ -3,11 +3,12 @@ import TextSize from "@/components/TextSize";
 import Nav from "@/components/Nav";
 import { PeopleProvider } from "@/components/PeopleProvider";
 import { PlanProvider } from "@/components/PlanProvider";
+import { FavouritesProvider } from "@/components/FavouritesProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Family Table",
-  description: "Family meal planner for 8",
+  description: "Easy, low-salt family recipes and a meal planner",
   appleWebApp: { capable: true, title: "Family Table", statusBarStyle: "default" },
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#047857" };
@@ -20,7 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <TextSize />
         <PlanProvider>
           <PeopleProvider>
-            <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+            <FavouritesProvider>
+              <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+            </FavouritesProvider>
           </PeopleProvider>
         </PlanProvider>
       </body>

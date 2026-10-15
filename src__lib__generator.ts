@@ -42,6 +42,9 @@ function needInWindow(
     onepot: quick,
     onedish: worst(lunchOneDish) + worst(noodleNights),
     breakfast_item: 0,
+    wrap: 0,
+    pie: 0,
+    salad: 0,
     snack: 0,
     staple: 0,
   };

@@ -1,6 +1,9 @@
 import Link from "next/link";
 
 const items = [
+  { href: "/today", title: "Today's menu 今日菜单", text: "What is on the 90-day meal plan for today." },
+  { href: "/shopping", title: "Meal plan shopping list 购物清单", text: "One shopping list for the next days of the meal plan." },
+  { href: "/recipes", title: "Meal plan recipe check 食谱库", text: "See how many dishes the meal planner has, and filter them." },
   { href: "/festivals", title: "Festival menus 节日菜单", text: "Dongzhi, Christmas, New Year's Eve and Chinese New Year dinners. Put one on its date with one tap." },
   { href: "/family", title: "Family notes 家人备注", text: "Write who avoids what (for example prawns or beef). The Today and Week pages will warn you." },
   { href: "/settings", title: "Weekly pattern 每周安排", text: "Choose quick one-pot nights, porridge/noodle lunches, noodle dinners and the meat-free day." },

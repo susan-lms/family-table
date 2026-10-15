@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { HeartButton } from "@/components/FavouritesProvider";
+import { recipeSodium } from "@/lib/sodium";
 import { SENIOR_TIP, isSoft } from "@/lib/softness";
 import { LEFTOVER_TIP, isCalciumRich, keepsWell } from "@/lib/nutrition";
 import { ingredientZh } from "@/lib/zh-ingredients";
@@ -9,7 +11,8 @@ import type { Recipe } from "@/lib/types";
 
 const fmt = (n: number) => `${+n.toFixed(2)}`;
 
-export default function CookMode({ recipe, initialServings = 8 }: { recipe: Recipe; initialServings?: 4 | 8 }) {
+export default function CookMode({ recipe, initialServings = 8 }: { recipe: Recipe; initialServings?: number }) {
+  const router = useRouter();
   const steps = recipe.steps ?? [];
   const [i, setI] = useState(0);
   const [have, setHave] = useState<Record<number, boolean>>({});
@@ -18,21 +21,26 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
 
   return (
     <div className="space-y-5">
-      <Link href="/" className="text-lg font-semibold text-emerald-800 underline">← Back</Link>
+      <button onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))} className="text-lg font-semibold text-emerald-800 underline">← Back</button>
       <h1 className="text-3xl font-bold">{recipe.name}</h1>
       {recipe.name_zh && <p className="text-2xl font-semibold text-stone-700">{recipe.name_zh}</p>}
       {isSoft(recipe) && <p className="text-lg"><span className="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-900">Soft</span> Easy to chew for the seniors.</p>}
-      <p className="text-lg">
-        For {servings} people · Prep {recipe.prep_time_minutes} min · Cook {recipe.cook_time_minutes} min
+      <p className="flex flex-wrap items-center gap-2 text-lg">
+        <span className={`rounded-full px-3 py-1 font-semibold ${recipe.prep_time_minutes + recipe.cook_time_minutes <= 30 ? "bg-emerald-100 text-emerald-900" : "bg-stone-200"}`}>⏱ {recipe.prep_time_minutes + recipe.cook_time_minutes} min in all</span>
+        <span>Prep {recipe.prep_time_minutes} min · Cook {recipe.cook_time_minutes} min · For {servings} people</span>
       </p>
-      <div className="flex gap-2" role="group" aria-label="Number of people">
-        {[4, 8].map((n) => (
+      <p className="text-base text-stone-700">
+        About {Math.round(recipeSodium(recipe) / 8 / 10) * 10} mg sodium per person (rough estimate; the daily limit is 2,000 mg for all food). Rough cost S${(recipe.estimated_cost_sgd * servings / 8).toFixed(2)}.
+      </p>
+      <HeartButton id={recipe.recipe_id} servings={servings} big />
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Number of people"><span className="text-lg font-semibold">Cook for:</span>
+        {[2, 4, 6, 8].map((n) => (
           <button
             key={n}
             onClick={() => setServings(n)}
-            className={`rounded-full px-5 py-3 text-lg font-semibold ${servings === n ? "bg-emerald-700 text-white" : "bg-stone-200"}`}
+            className={`rounded-full px-4 py-3 text-lg font-semibold ${servings === n ? "bg-emerald-700 text-white" : "bg-stone-200"}`}
           >
-            {n} people
+            {n}
           </button>
         ))}
       </div>
@@ -49,7 +57,7 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
       {keepsWell(recipe) && <p className="rounded-lg bg-stone-100 px-4 py-3 text-base text-stone-800">{LEFTOVER_TIP}</p>}
       {recipe.dish_class === "onedish" && (
         <p className="rounded-lg bg-indigo-50 px-4 py-3 text-lg font-medium text-indigo-900">
-          A complete {recipe.meal === "porridge" ? "porridge" : recipe.meal === "noodles" ? "noodle" : "sandwich"} meal with protein and vegetables. No rice dishes needed. At dinner, serve with the soup.
+          A complete {recipe.meal === "porridge" ? "porridge" : recipe.meal === "noodles" ? "noodle" : recipe.meal === "sandwich" ? "sandwich" : "one-dish"} meal with protein and vegetables. No other dishes needed. At dinner, serve with a soup.
         </p>
       )}
       <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested.</p>

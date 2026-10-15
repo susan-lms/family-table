@@ -10,6 +10,13 @@ import type { Ingredient, Recipe } from "./types";
 interface Rule { re: RegExp; kg?: number; l?: number; each?: number; tsp?: number }
 
 export const PRICE_RULES: Rule[] = [
+  // recipe-book additions (rough guesses, like the rest)
+  { re: /lamb chops/i, kg: 40 }, { re: /lamb/i, kg: 28 }, { re: /pomfret/i, kg: 25 }, { re: /oyster/i, kg: 25 }, { re: /clams/i, kg: 12 },
+  { re: /fish balls/i, kg: 9 }, { re: /dried shrimp/i, kg: 60 }, { re: /dried squid/i, kg: 70 },
+  { re: /grated cheese/i, kg: 14 }, { re: /puff pastry sheet/i, each: 1.2 }, { re: /avocado/i, each: 2 }, { re: /popiah skin/i, each: 0.3 },
+  { re: /jicama/i, kg: 2.5 }, { re: /salted egg/i, each: 0.8 }, { re: /preserved radish|chai poh/i, kg: 12 }, { re: /mustard greens/i, kg: 5 },
+  { re: /bean paste|bean sauce/i, l: 9 }, { re: /tea leaves/i, tsp: 0.1 }, { re: /unsalted butter/i, kg: 14 }, { re: /black beans/i, kg: 4 },
+  { re: /dried tofu skin/i, kg: 25 }, { re: /tofu puffs/i, kg: 9 },
   // proteins
   { re: /salmon/i, kg: 36 }, { re: /cod/i, kg: 38 }, { re: /sea bass|mackerel/i, kg: 18 },
   { re: /white fish/i, kg: 22 }, { re: /prawn/i, kg: 28 }, { re: /canned tuna/i, kg: 14 },

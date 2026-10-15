@@ -12,6 +12,18 @@ import type { Ingredient, PlannedDay, Recipe } from "./types";
 interface Rule { re: RegExp; tbsp?: number; tsp?: number; per100?: number; each?: number }
 
 const RULES: Rule[] = [
+  // recipe-book additions. ASSUMPTIONS (not verified): salty preserved foods are counted after rinsing, so about half of their raw saltiness.
+  { re: /grated cheese/i, per100: 600 },
+  { re: /salted egg/i, each: 400 }, // yolk only
+  { re: /preserved radish|chai poh/i, per100: 1500 },
+  { re: /salted mustard|preserved mustard/i, per100: 1500 },
+  { re: /mustard greens/i, per100: 60 }, // fresh gai choy
+  { re: /dried shrimp|dried squid/i, per100: 1500 },
+  { re: /popiah skin/i, each: 80 },
+  { re: /bean paste|bean sauce/i, tbsp: 450 },
+  { re: /puff pastry sheet/i, each: 900 },
+  { re: /fish balls/i, per100: 500 },
+  { re: /black beans/i, per100: 120 }, // canned, rinsed
   { re: /kecap manis|sweet soy/i, tbsp: 227 },
   { re: /oyster sauce/i, tbsp: 580 },
   { re: /fish sauce/i, tbsp: 1012 },

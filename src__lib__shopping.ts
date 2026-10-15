@@ -1,4 +1,4 @@
-import type { Category, Ingredient, PlannedDay, Slot } from "./types";
+import type { Category, Ingredient, PlannedDay, Recipe, Slot } from "./types";
 import { slotFactor } from "./servings";
 import { fruitFor } from "./nutrition";
 
@@ -63,4 +63,22 @@ export function formatQty(qty: number, unit: string): string {
   if (unit === "g" && qty >= 1000) return `${+(qty / 1000).toFixed(2)} kg`;
   if (unit === "ml" && qty >= 1000) return `${+(qty / 1000).toFixed(2)} l`;
   return `${+qty.toFixed(2)} ${unit === "piece" ? "pcs" : unit}`;
+}
+
+/** Shopping list for chosen recipes (saved recipes). Each recipe is written for 8, so its amounts are scaled to the number of people chosen. */
+export function buildRecipeShoppingList(entries: Array<{ recipe: Recipe; servings: number }>): ShoppingItem[] {
+  const map = new Map<string, ShoppingItem>();
+  for (const { recipe, servings } of entries) {
+    const factor = servings / 8;
+    for (const ing of recipe.ingredients ?? []) {
+      if (ing.category === "Other" && /^(warm |cold )?water$/i.test(ing.name)) continue; // tap water is not shopping
+      const n = normalise(ing);
+      const k = `${ing.name.toLowerCase()}|${n.unit}`;
+      const existing = map.get(k);
+      if (existing) existing.qty += n.qty * factor;
+      else map.set(k, { name: ing.name, qty: n.qty * factor, unit: n.unit, category: ing.category });
+    }
+  }
+  for (const item of map.values()) if (item.unit === "piece") item.qty = Math.ceil(item.qty - 1e-9);
+  return [...map.values()].sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
 }
