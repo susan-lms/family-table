@@ -24,6 +24,12 @@ import { regionalMore } from "./recipes-browse-cn2";
 import { moreWestern } from "./recipes-browse-more";
 import { asiaMore } from "./recipes-browse-asia";
 import { moreAll2 } from "./recipes-browse-more2";
+import { moreAll3 } from "./recipes-browse-more3";
+import { DISH_ZH_MORE3 } from "./zh-names-more3";
+import { japaneseMore } from "./recipes-browse-jp2";
+import { DISH_ZH_MORE4 } from "./zh-names-more4";
+import { westernMore3 } from "./recipes-browse-west3";
+import { DISH_ZH_MORE5 } from "./zh-names-more5";
 import { DISH_ZH_MORE2 } from "./zh-names-more2";
 
 /**
@@ -225,10 +231,10 @@ export const festivalLibrary: Recipe[] = servedAll.filter((r) => !!r.festival);
 export const browseRecipes: Recipe[] = [
   ...cantonese, ...cantoneseSoups, ...teochew, ...teochewSoups, ...hokkien, ...hokkienSoups, ...hakka, ...hakkaSoups,
   ...westMains, ...westSoups, ...lamb, ...mexican, ...pies, ...salads,
-  ...regionalMore, ...moreWestern, ...asiaMore, ...moreAll2,
+  ...regionalMore, ...moreWestern, ...asiaMore, ...moreAll2, ...moreAll3, ...japaneseMore, ...westernMore3,
 ].map((r) => {
   const cost = estimateRecipeCost(r);
-  return { ...(cost === undefined ? r : { ...r, estimated_cost_sgd: cost }), name_zh: DISH_ZH_BROWSE[r.recipe_id] ?? DISH_ZH_MORE[r.recipe_id] ?? DISH_ZH_MORE2[r.recipe_id] };
+  return { ...(cost === undefined ? r : { ...r, estimated_cost_sgd: cost }), name_zh: DISH_ZH_BROWSE[r.recipe_id] ?? DISH_ZH_MORE[r.recipe_id] ?? DISH_ZH_MORE2[r.recipe_id] ?? DISH_ZH_MORE3[r.recipe_id] ?? DISH_ZH_MORE4[r.recipe_id] ?? DISH_ZH_MORE5[r.recipe_id] };
 });
 
 /** Everything the recipe book can show: all served dishes (including festival dishes) plus the recipe-book dishes. */
