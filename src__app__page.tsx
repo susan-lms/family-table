@@ -6,6 +6,7 @@ import { catalog, EXCLUDED_CUISINES } from "@/lib/sample-data";
 import { CUISINES, MEAT_CHIPS, TIME_OPTIONS, TYPES, cuisineIdOf, emojiOf, fmtMinutes, originOf, totalMinutes } from "@/lib/browse";
 import { CUISINE_TONE, TYPE_TONE } from "@/lib/theme";
 import { mainProtein } from "@/lib/protein";
+import { matchScore, parseQuery } from "@/lib/search";
 import { isSoft } from "@/lib/softness";
 import { HeartButton } from "@/components/FavouritesProvider";
 import { Thumb } from "@/components/PhotosProvider";
@@ -37,10 +38,15 @@ export default function RecipeBook() {
   const [toast, setToast] = useState("");
 
   const pool = useMemo(() => catalog.filter((r) => !EXCLUDED_CUISINES.includes(r.cuisine)), []);
-  const cuisineTest = CUISINES.find((c) => c.id === cuisine)!.test;
-  const typeTest = TYPES.find((t) => t.id === type)!.test;
+  const parsed = useMemo(() => parseQuery(q), [q]);
+  // Typing a cuisine or dish-type word (e.g. "chinese", "soup") picks that tab by itself.
+  const cuisineNow = parsed.cuisineId ?? cuisine;
+  const typeNow = parsed.typeId ?? type;
+  const cuisineTest = CUISINES.find((c) => c.id === cuisineNow)!.test;
+  const typeTest = TYPES.find((t) => t.id === typeNow)!.test;
   const maxMin = TIME_OPTIONS.find((t) => t.id === time)!.max;
-  const needle = q.trim().toLowerCase();
+  const words = parsed.tokens;
+  const dropWords = () => setQ(parsed.tokens.join(" "));
 
   const shown = useMemo(
     () =>
@@ -49,14 +55,17 @@ export default function RecipeBook() {
           (r) =>
             cuisineTest(r) &&
             typeTest(r) &&
-            (type !== "meat" || meat === "all" || mainProtein(r) === meat) &&
-            (type !== "pie" || pieKind === "all" || (pieKind === "sweet") === !!r.sweet) &&
+            (typeNow !== "meat" || meat === "all" || mainProtein(r) === meat) &&
+            (typeNow !== "pie" || pieKind === "all" || (pieKind === "sweet") === !!r.sweet) &&
             totalMinutes(r) <= maxMin &&
             (!softOnly || isSoft(r)) &&
-            (needle === "" || r.name.toLowerCase().includes(needle) || (r.name_zh ?? "").includes(q.trim())),
+            matchScore(r, words) > 0,
         )
-        .sort((a, b) => totalMinutes(a) - totalMinutes(b) || a.name.localeCompare(b.name)),
-    [pool, cuisineTest, typeTest, type, meat, pieKind, maxMin, softOnly, needle, q],
+        .sort(
+          (a, b) =>
+            matchScore(b, words) - matchScore(a, words) || totalMinutes(a) - totalMinutes(b) || a.name.localeCompare(b.name),
+        ),
+    [pool, cuisineTest, typeTest, typeNow, meat, pieKind, maxMin, softOnly, words],
   );
 
   const reset = () => setLimit(PAGE);
@@ -73,10 +82,20 @@ export default function RecipeBook() {
         type="search"
         value={q}
         onChange={(e) => { setQ(e.target.value); reset(); }}
-        placeholder="Search a dish, e.g. fish, 豆腐"
+        placeholder="Search: Chinese, pork, tofu soup, 豆腐"
         aria-label="Search recipes"
         className="w-full rounded-xl border-2 border-stone-300 px-4 py-3 text-lg"
       />
+
+      {q.trim() !== "" && (
+        <p className="flex flex-wrap items-center gap-2 rounded-xl bg-sky-50 px-4 py-3 text-lg text-sky-900" role="status">
+          <span>
+            Showing{parsed.understood.length > 0 ? <b> {parsed.understood.join(" · ")}</b> : null}
+            {words.length > 0 ? <> with <b>{words.join(" + ")}</b></> : null}
+          </span>
+          <button type="button" onClick={() => { setQ(""); reset(); }} className="rounded-full bg-sky-200 px-3 py-1 text-base font-semibold">✕ Clear search</button>
+        </p>
+      )}
 
       <section aria-label="Cuisine">
         <h2 className="mb-2 text-xl font-bold text-orange-700">1. Choose a cuisine 菜系</h2>
@@ -84,9 +103,9 @@ export default function RecipeBook() {
           {CUISINES.map((c) => (
             <button
               key={c.id}
-              onClick={() => { setCuisine(c.id); reset(); }}
-              aria-pressed={cuisine === c.id}
-              className={`rounded-2xl border-2 px-3 py-3 text-left ${cuisine === c.id ? CUISINE_TONE[c.id].on : CUISINE_TONE[c.id].tile}`}
+              onClick={() => { setCuisine(c.id); if (parsed.cuisineId) dropWords(); reset(); }}
+              aria-pressed={cuisineNow === c.id}
+              className={`rounded-2xl border-2 px-3 py-3 text-left ${cuisineNow === c.id ? CUISINE_TONE[c.id].on : CUISINE_TONE[c.id].tile}`}
             >
               <span className="block text-2xl">{c.emoji}</span>
               <span className="block text-lg font-semibold leading-tight">{c.label}</span>
@@ -100,19 +119,19 @@ export default function RecipeBook() {
         <h2 className="mb-2 text-xl font-bold text-emerald-700">2. Choose a type of dish 菜式</h2>
         <div className="flex flex-wrap gap-2">
           {TYPES.map((t) => (
-            <button key={t.id} onClick={() => { setType(t.id); setMeat("all"); setPieKind("all"); reset(); }} aria-pressed={type === t.id} className={typeChip(t.id, type === t.id)}>
+            <button key={t.id} onClick={() => { setType(t.id); setMeat("all"); setPieKind("all"); if (parsed.typeId) dropWords(); reset(); }} aria-pressed={typeNow === t.id} className={typeChip(t.id, typeNow === t.id)}>
               {t.emoji} {t.label}
             </button>
           ))}
         </div>
-        {type === "meat" && (
+        {typeNow === "meat" && (
           <div className="mt-3 flex flex-wrap gap-2">
             {["all", ...MEAT_CHIPS].map((m) => (
               <button key={m} onClick={() => { setMeat(m); reset(); }} className={chip(meat === m)}>{m === "all" ? "Any meat" : m[0].toUpperCase() + m.slice(1)}</button>
             ))}
           </div>
         )}
-        {type === "pie" && (
+        {typeNow === "pie" && (
           <div className="mt-3 flex flex-wrap gap-2">
             {[["all", "All pies"], ["savoury", "Savoury"], ["sweet", "Sweet"]].map(([id, label]) => (
               <button key={id} onClick={() => { setPieKind(id); reset(); }} className={chip(pieKind === id)}>{label}</button>
