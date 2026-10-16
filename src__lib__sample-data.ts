@@ -240,6 +240,12 @@ export const browseRecipes: Recipe[] = [
 /** Everything the recipe book can show: all served dishes (including festival dishes) plus the recipe-book dishes. */
 export const catalog: Recipe[] = [...servedAll, ...browseRecipes];
 
+/** Recipes the family typed in on their own device. The recipe book adds them here after the page loads, so every page can find them. */
+export function setUserRecipes(list: Recipe[]): void {
+  for (let k = catalog.length - 1; k >= 0; k--) if (catalog[k].mine) catalog.splice(k, 1);
+  for (const r of list) catalog.push(r);
+}
+
 export function findRecipe(id: string): Recipe | undefined {
   return catalog.find((r) => r.recipe_id === id);
 }

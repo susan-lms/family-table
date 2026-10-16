@@ -15,6 +15,7 @@ export interface ParsedQuery {
 }
 
 const CUISINE_WORDS: [string, string, string][] = [
+  ["my recipes", "mine", "My recipes"], ["my recipe", "mine", "My recipes"], ["我的食谱", "mine", "My recipes"],
   // [keyword, cuisine tab id, label]
   ["chinese", "chinese", "Chinese"], ["中餐", "chinese", "Chinese"], ["中国菜", "chinese", "Chinese"],
   ["cantonese", "cantonese", "Cantonese"], ["粤菜", "cantonese", "Cantonese"], ["广东", "cantonese", "Cantonese"],

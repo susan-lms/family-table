@@ -20,7 +20,7 @@ ok(library.every((r) => !r.browse) && festivalLibrary.every((r) => !r.browse), "
 ok(!library.some((r) => r.cuisine === "Mexican"), "no Mexican-style dish enters the planner pool");
 for (const c of CUISINES) {
   const quick = catalog.filter((r) => c.test(r) && r.cuisine !== "Indian" && totalMinutes(r) <= 30);
-  ok(c.id === "other" || quick.length >= 5, `cuisine "${c.label}" has ${quick.length} quick recipes`);
+  ok(c.id === "other" || c.id === "mine" || quick.length >= 5, `cuisine "${c.label}" has ${quick.length} quick recipes`);
 }
 const countType = (id: string) => catalog.filter((r) => TYPES.find((t) => t.id === id)!.test(r) && totalMinutes(r) <= 30).length;
 for (const t of TYPES) ok(countType(t.id) >= 5, `type "${t.label}" has ${countType(t.id)} quick recipes`);

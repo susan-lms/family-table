@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { HeartButton } from "@/components/FavouritesProvider";
 import { recipeSodium } from "@/lib/sodium";
 import { emojiOf, fmtMinutes } from "@/lib/browse";
@@ -70,7 +71,14 @@ export default function CookMode({ recipe, initialServings = 8 }: { recipe: Reci
           A complete {recipe.meal === "porridge" ? "porridge" : recipe.meal === "noodles" ? "noodle" : recipe.meal === "sandwich" ? "sandwich" : "one-dish"} meal with protein and vegetables. No other dishes needed. At dinner, serve with a soup.
         </p>
       )}
-      <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested. Recipe number: {recipe.recipe_id}</p>
+      {recipe.mine ? (
+        <p className="flex flex-wrap items-center gap-3 text-base text-stone-700">
+          <span>⭐ Your own recipe{recipe.source ? ` · From: ${recipe.source}` : ""}. The salt, sugar and oil are as you wrote them.</span>
+          <Link href={`/mine/edit?id=${recipe.recipe_id}`} className="rounded-xl bg-yellow-200 px-4 py-2 text-base font-semibold text-yellow-900">✏️ Edit</Link>
+        </p>
+      ) : (
+        <p className="text-sm text-stone-500">Sample recipe — not yet taste-tested. Recipe number: {recipe.recipe_id}</p>
+      )}
 
       {recipe.food_safety && (
         <p className="rounded-lg border-2 border-red-300 bg-red-50 px-4 py-3 text-lg font-medium text-red-900">

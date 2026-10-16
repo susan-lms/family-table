@@ -5,6 +5,7 @@ import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
 import { useFavourites } from "@/components/FavouritesProvider";
 import { findRecipe } from "@/lib/sample-data";
+import { useMyRecipes } from "@/components/MyRecipesProvider";
 import { buildRecipeShoppingList, formatQty } from "@/lib/shopping";
 import { ingredientZh } from "@/lib/zh-ingredients";
 import { emojiOf, fmtMinutes, totalMinutes } from "@/lib/browse";
@@ -16,6 +17,7 @@ import type { Recipe } from "@/lib/types";
 const SIZES = [2, 4, 6, 8];
 
 export default function Saved() {
+  useMyRecipes(); // so recipes the family added show up here too
   const { saved, toggle, setServings, clear } = useFavourites();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const entries = Object.entries(saved)

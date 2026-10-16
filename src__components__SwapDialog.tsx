@@ -29,7 +29,7 @@ export default function SwapDialog({ slot, date, allDays, current, message, onPi
   // every dish of the same type from the whole recipe book (festival-only dishes are kept for their own dinners)
   const options = catalog.filter(
     (r) =>
-      r.dish_class === current.dish_class && r.recipe_id !== current.recipe_id && !r.festival && !EXCLUDED_CUISINES.includes(r.cuisine) && test(r) &&
+      r.dish_class === current.dish_class && r.recipe_id !== current.recipe_id && !r.festival && !r.mine && !EXCLUDED_CUISINES.includes(r.cuisine) && test(r) &&
       (needle === "" || r.name.toLowerCase().includes(needle) || (r.name_zh ?? "").includes(q.trim())) &&
       !(slot === "dinner" && r.meal === "porridge"), // porridge is a lunch choice
   );

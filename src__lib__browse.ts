@@ -19,6 +19,7 @@ const rg = (g: NonNullable<Recipe["region"]>) => (r: Recipe) => r.region === g;
 
 export const CUISINES: Facet[] = [
   { id: "all", label: "All cuisines", zh: "全部", emoji: "🍽️", test: () => true },
+  { id: "mine", label: "My recipes", zh: "我的食谱", emoji: "⭐", test: (r) => !!r.mine },
   { id: "chinese", label: "Chinese (all)", zh: "中餐", emoji: "🥢", test: cu("Chinese") },
   { id: "cantonese", label: "Cantonese", zh: "粤菜", emoji: "🦆", test: rg("Cantonese") },
   { id: "teochew", label: "Teochew", zh: "潮州菜", emoji: "🐟", test: rg("Teochew") },
@@ -64,6 +65,7 @@ export function emojiOf(r: Recipe): string {
 
 /** Which cuisine tile a recipe belongs to (used for its colour). */
 export function cuisineIdOf(r: Recipe): string {
+  if (r.mine) return "mine";
   if (r.region) return r.region.toLowerCase();
   switch (r.cuisine) {
     case "Chinese": return "chinese";

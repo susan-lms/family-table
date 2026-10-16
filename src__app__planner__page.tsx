@@ -7,6 +7,7 @@ import DayCard from "@/components/DayCard";
 import RangeCalendar from "@/components/RangeCalendar";
 import { useExtras } from "@/components/ExtrasProvider";
 import { findRecipe } from "@/lib/sample-data";
+import { useMyRecipes } from "@/components/MyRecipesProvider";
 import { SLOT_LABELS } from "@/lib/sample-data";
 import { usePlan } from "@/components/PlanProvider";
 import { PLAN_START, todaySG } from "@/lib/plan-data";
@@ -20,6 +21,7 @@ const pretty = (iso: string) =>
 const MARKS: Record<string, string> = Object.fromEntries(FESTIVALS.map((f) => [f.date, f.name]));
 
 export default function Planner() {
+  useMyRecipes(); // so recipes the family added show up here too
   const { days, reset, changed } = usePlan();
   const { extras, remove } = useExtras();
   const repeats = checkNoRepeat(days);

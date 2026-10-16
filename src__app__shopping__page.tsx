@@ -5,6 +5,7 @@ import PrintButton from "@/components/PrintButton";
 import Link from "next/link";
 import { buildRecipeShoppingList, buildShoppingList, formatQty, mergeShoppingLists } from "@/lib/shopping";
 import { findRecipe } from "@/lib/sample-data";
+import { useMyRecipes } from "@/components/MyRecipesProvider";
 import { useExtras } from "@/components/ExtrasProvider";
 import type { Recipe } from "@/lib/types";
 import { ingredientZh } from "@/lib/zh-ingredients";
@@ -12,6 +13,7 @@ import { todaySG } from "@/lib/plan-data";
 import { usePlan } from "@/components/PlanProvider";
 
 export default function Shopping() {
+  useMyRecipes(); // so recipes the family added show up here too
   const { days: planDays } = usePlan();
   const todayIdx = Math.max(0, planDays.findIndex((d) => d.date === todaySG()));
   const [count, setCount] = useState(3);

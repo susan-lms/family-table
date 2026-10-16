@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const items = [
+  { href: "/mine", title: "My recipes 我的食谱", text: "Add a recipe you found on a website or in a book. It is kept on this phone only." },
   { href: "/today", title: "Today's menu 今日菜单", text: "What is on the 90-day meal plan for today." },
   { href: "/shopping", title: "Meal plan shopping list 购物清单", text: "One shopping list for the next days of the meal plan." },
   { href: "/recipes", title: "Meal plan recipe check 食谱库", text: "See how many dishes the meal planner has, and filter them." },

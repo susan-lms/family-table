@@ -11,6 +11,7 @@ import { isSoft } from "@/lib/softness";
 import { HeartButton } from "@/components/FavouritesProvider";
 import { Thumb } from "@/components/PhotosProvider";
 import AddToPlan from "@/components/AddToPlan";
+import { useMyRecipes } from "@/components/MyRecipesProvider";
 
 const PAGE = 24;
 
@@ -37,7 +38,8 @@ export default function RecipeBook() {
   const [planFor, setPlanFor] = useState<string | null>(null);
   const [toast, setToast] = useState("");
 
-  const pool = useMemo(() => catalog.filter((r) => !EXCLUDED_CUISINES.includes(r.cuisine)), []);
+  const { recipes: mine } = useMyRecipes(); // re-draw when the family adds or removes a recipe
+  const pool = useMemo(() => catalog.filter((r) => !EXCLUDED_CUISINES.includes(r.cuisine)), [mine]);
   const parsed = useMemo(() => parseQuery(q), [q]);
   // Typing a cuisine or dish-type word (e.g. "chinese", "soup") picks that tab by itself.
   const cuisineNow = parsed.cuisineId ?? cuisine;
@@ -76,6 +78,7 @@ export default function RecipeBook() {
         <p className="text-xl font-semibold text-orange-900">{greeting()} 😊</p>
         <h1 className="mt-1 text-3xl font-bold text-stone-900">What shall we cook today? 今天煮什么？</h1>
         <p className="mt-1 text-lg text-stone-800">Pick a cuisine and a type of dish. Every recipe is gentle on salt, sugar and oil.</p>
+        <Link href="/mine/edit" className="mt-3 inline-block rounded-xl bg-yellow-500 px-5 py-3 text-lg font-bold text-stone-900 shadow">➕ Add my own recipe 添加我的食谱</Link>
       </header>
 
       <input

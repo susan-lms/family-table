@@ -3,6 +3,7 @@ export interface Tone { tile: string; on: string; edge: string; badge: string; d
 
 export const CUISINE_TONE: Record<string, Tone> = {
   all: { tile: "bg-slate-100 border-slate-300 text-slate-900 hover:bg-slate-200", on: "bg-slate-600 border-slate-700 text-white", edge: "border-l-slate-500", badge: "bg-slate-100 text-slate-900", dot: "bg-slate-500" },
+  mine: { tile: "bg-yellow-100 border-yellow-300 text-yellow-900 hover:bg-yellow-200", on: "bg-yellow-600 border-yellow-700 text-white", edge: "border-l-yellow-500", badge: "bg-yellow-100 text-yellow-900", dot: "bg-yellow-500" },
   chinese: { tile: "bg-red-100 border-red-300 text-red-900 hover:bg-red-200", on: "bg-red-600 border-red-700 text-white", edge: "border-l-red-500", badge: "bg-red-100 text-red-900", dot: "bg-red-500" },
   cantonese: { tile: "bg-orange-100 border-orange-300 text-orange-900 hover:bg-orange-200", on: "bg-orange-600 border-orange-700 text-white", edge: "border-l-orange-500", badge: "bg-orange-100 text-orange-900", dot: "bg-orange-500" },
   teochew: { tile: "bg-sky-100 border-sky-300 text-sky-900 hover:bg-sky-200", on: "bg-sky-600 border-sky-700 text-white", edge: "border-l-sky-500", badge: "bg-sky-100 text-sky-900", dot: "bg-sky-500" },

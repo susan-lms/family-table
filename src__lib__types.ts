@@ -43,6 +43,8 @@ export interface Recipe {
   region?: "Cantonese" | "Teochew" | "Hokkien" | "Hakka"; // Chinese regional style
   browse?: boolean; // recipe-book only: never used by the meal planner
   sweet?: boolean; // sweet pie or dessert
+  mine?: boolean; // added by the family on their own device (never part of the meal planner)
+  source?: string; // where the family found it (website, book, person)
   festival?: string; // festival-only dish (used by the festival menus, never by the normal plan)
   treat?: boolean; // deep-fried or rich dish: the planner allows at most 1 per 7 days
   ingredients?: Ingredient[]; // missing = "recipe details coming"
