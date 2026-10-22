@@ -2,12 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-html { font-size: 18px; }
+/* One size controls the whole page: the A- / A+ buttons set --ft-size. */
+html { font-size: var(--ft-size, 15px); }
 body { background: linear-gradient(180deg, #fff7e6 0%, #fffdf8 220px); background-attachment: fixed; color: #1f2933; }
 
-html.big { font-size: 22px; }
 @media print {
-  html, html.big { font-size: 14px; }
+  html { font-size: 14px !important; }
   .no-print { display: none !important; }
   body { background: #fff; padding: 0; }
   main { max-width: none; padding: 0; }

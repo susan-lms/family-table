@@ -18,7 +18,11 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Set the saved text size before the page paints, so it does not jump. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var s=[13,15,17,19,21,24],l=localStorage.getItem("family-table-text-level");if(l===null&&localStorage.getItem("family-table-big-text")==="1")l=4;if(l!==null&&s[+l])document.documentElement.style.setProperty("--ft-size",s[+l]+"px")}catch(e){}` }} />
+      </head>
       <body className="min-h-screen pb-24 md:pb-0">
         <div className="no-print"><Nav /></div>
         <TextSize />
